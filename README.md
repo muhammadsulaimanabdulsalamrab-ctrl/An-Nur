@@ -2,142 +2,70 @@
 
 > **"Allah is the Light of the heavens and the earth."** — An-Nur 24:35
 
-A beautiful, free, fully offline-capable Qur'an discovery tool. Find any ayah you half-remember — by meaning, transliteration, surah, or theme — with audio recitation from 4 of the most beloved reciters.
-
-**[→ Live Demo](https://your-username.github.io/an-nur)**
-
----
+A beautiful, free, production-grade Islamic companion — Qur'an, the 99 Names of Allah, authentic Hadith, and Stories of the Prophets — updated daily.
 
 ## ✨ Features
 
-| Feature | Details |
-|---|---|
-| 🔍 **Smart Search** | Search 48 beloved ayat by meaning, transliteration, surah name, or theme |
-| 📖 **All 114 Surahs** | Full index with English/Arabic names, meanings, ayat count, Makki/Madani |
-| 🗂️ **16 Topic Cards** | Browse by Mercy, Patience, Forgiveness, Hope, Tawakkul, Light, and more |
-| 🌙 **Ayah of the Day** | Rotates daily — a new ayah every morning |
-| 🎧 **Audio Recitation** | 4 reciters: Mishary Alafasy, Abdul Basit, Maher Al-Muaiqly, Al-Minshawi |
-| 🔖 **Bookmarks** | Save your favourites — persists across sessions via localStorage |
-| ☀️🌙 **Light & Dark Mode** | Anthropic-exact palette — warm cream light, warm near-black dark |
-| 📱 **Fully Responsive** | Works beautifully on mobile, tablet, and desktop |
-| ⚡ **Zero Dependencies** | Single HTML file, no build step, no backend, no API keys |
-| 🆓 **Free Forever** | Built as sadaqah jariyah for the Ummah |
+- 📖 **Qur'an** — All 114 surahs with Arabic, transliteration, translation & audio
+- 🕊️ **99 Names of Allah** — Complete Al-Asma ul-Husna with meanings and descriptions
+- 📜 **45+ Authentic Hadith** — From Bukhari, Muslim, 40 Nawawi, Riyad as-Salihin (all Sahih/Hasan)
+- 📚 **25 Prophet Stories** — Adam, Nuh, Ibrahim, Yusuf, Musa, Isa, Muhammad ﷺ and more
+- 🎧 **4 Reciters** — Mishary Alafasy, Abdul Basit, Maher Al-Muaiqly, Al-Minshawi
+- 📅 **Daily Rotation** — New ayah, name, hadith, and story every single day automatically
+- 🎥 **Friday Khutbah** — Embedded weekly sermon video
+- 🔖 **Bookmarks** — Save ayat, names, and hadith with localStorage persistence
+- ☀️🌙 **Light & Dark Mode** — Anthropic-quality design system
+- 🔍 **Universal Search** — Search across all content types at once
+- 📱 **Fully Responsive** — Beautiful on mobile, tablet, desktop
 
----
-
-## 🚀 Deploy in 60 Seconds
-
-### Option 1 — GitHub Pages (Recommended, Free)
+## 🚀 Deploy to Vercel (60 seconds)
 
 ```bash
-# 1. Fork or clone this repo
-git clone https://github.com/your-username/an-nur.git
-cd an-nur
-
-# 2. Push to GitHub
-git add .
-git commit -m "initial commit"
-git push origin main
-
-# 3. Go to Settings → Pages → Source: main branch / root
-# Your site will be live at: https://your-username.github.io/an-nur
+npm i -g vercel
+vercel --prod
 ```
 
-### Option 2 — Netlify (Free, Instant)
+Or drag the folder to [vercel.com/new](https://vercel.com/new).
 
-1. Go to [netlify.com](https://netlify.com) → "Deploy manually"
-2. Drag and drop the `index.html` file
-3. Done — live in seconds with a custom URL
+## 🚀 Deploy to GitHub Pages
 
-### Option 3 — Vercel (Free)
+1. Create a new repo on GitHub named `an-nur`
+2. Upload all files
+3. Settings → Pages → Source: **GitHub Actions**
+4. Done — live at `your-username.github.io/an-nur`
 
-```bash
-npx vercel --prod
-```
-
-### Option 4 — Any Static Host
-
-Just upload `index.html` anywhere that serves static files. That's it.
-
----
-
-## 🛠️ Tech Stack
-
-- **Zero frameworks** — pure HTML, CSS, JavaScript
-- **Fonts** — Fraunces (display, same as Anthropic.com) + Geist (body) + Amiri Quran (Arabic)
-- **Audio** — [EveryAyah.com](https://everyayah.com) (free MP3 CDN, no API key)
-- **Data** — All 48 curated ayat fully embedded with Arabic text (with tashkeel), transliteration, and Saheeh International translation
-- **Storage** — localStorage for bookmarks and preferences
-
----
-
-## 📁 Project Structure
+## 📁 Files
 
 ```
 an-nur/
-├── index.html          # The entire app — single self-contained file
-├── README.md           # This file
-├── LICENSE             # MIT License
-└── .github/
-    └── workflows/
-        └── deploy.yml  # Auto-deploy to GitHub Pages on push
+├── index.html         # Main HTML
+├── app.js             # Application logic
+├── data.js            # All Qur'an ayat, 99 names, hadith, stories
+├── vercel.json        # Vercel config
+├── README.md          # This file
+└── LICENSE            # MIT
 ```
-
----
 
 ## 🎨 Design
 
-Built with the exact Anthropic/Claude.ai design language:
+- **Typography**: Fraunces (display, Anthropic's typeface) + Geist (body) + Amiri Quran (Arabic)
+- **Palette**: Warm cream light / warm near-black dark with terracotta accent
+- **Zero frameworks** — pure HTML/CSS/JS, no build step
 
-- **Typography** — Fraunces (editorial serif, same as anthropic.com) + Geist
-- **Light theme** — warm cream base `#faf9f7`, terracotta accent `#c96442`
-- **Dark theme** — warm near-black `#111110`, coral accent `#e07a55`
-- **Motion** — subtle fade-up animations, hover states, micro-interactions
+## 📿 Sources
 
----
-
-## 🎙️ Reciters
-
-| Reciter | Style |
-|---|---|
-| Mishary Rashid Alafasy | Murattal — clear, melodic |
-| Abdul Basit Abdus Samad | Mujawwad — classical, revered |
-| Maher Al-Muaiqly | Murattal — Madinah, warm |
-| Mahmoud Khalil Al-Minshawi | Murattal — deeply moving |
-
----
-
-## 📿 Data
-
-- **48 curated ayat** — hand-selected beloved ayat with full Arabic (with tashkeel), transliteration (with diacritics), and Saheeh International English translation
-- **114 surahs** — complete metadata for the entire Qur'an
-- **16 topics** — Mercy, Patience, Gratitude, Forgiveness, Hope, Strength, Tawakkul, Light, Du'a, Tawheed, Paradise, Knowledge, Brotherhood, Repentance, Peace, Creation
-
----
+- Qur'an text: Saheeh International translation
+- Hadith: Bukhari, Muslim, 40 Nawawi, Riyad as-Salihin — all authentic
+- Audio: [EveryAyah.com](https://everyayah.com)
 
 ## 🤲 Intention
 
-*This project was built as sadaqah jariyah — a continuing charity — for the Muslim Ummah worldwide. It is free, will always be free, and carries no ads. May Allah accept it.*
-
-> اللَّهُمَّ تَقَبَّلْ مِنَّا
-
----
+Built as sadaqah jariyah — continuing charity — for the Ummah. Free forever. No ads. No tracking. May Allah accept it.
 
 ## 📜 License
 
-MIT License — free to use, modify, and distribute.
+MIT — use, modify, share freely.
 
 ---
 
-## 🌙 Coming Soon
-
-- [ ] Full Qur'an search (all 6,236 ayat)
-- [ ] Fuzzy/phonetic transliteration matching
-- [ ] Related ayat
-- [ ] Memorization helper
-- [ ] Tafsir integration
-- [ ] PWA / installable app
-
----
-
-*Built with love. May Allah guide us all to the straight path. 🤍*
+*May Allah guide us all. 🤍*
