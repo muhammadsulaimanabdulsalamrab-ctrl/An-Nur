@@ -220,17 +220,19 @@ async function openSurah(num) {
 
 async function fetchFullSurah(num) {
   if (SURAH_CACHE[num]) return SURAH_CACHE[num];
-  // Quran.com API v4 — free, no key needed
-  const [arRes, enRes] = await Promise.all([
+  // Fetch Arabic, English translation, AND transliteration in parallel
+  const [arRes, enRes, trRes] = await Promise.all([
     fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${num}`),
-    fetch(`https://api.quran.com/api/v4/quran/translations/131?chapter_number=${num}`)
+    fetch(`https://api.quran.com/api/v4/quran/translations/131?chapter_number=${num}`),
+    fetch(`https://api.quran.com/api/v4/quran/transliterations/1?chapter_number=${num}`)
   ]);
-  const [ar, en] = await Promise.all([arRes.json(), enRes.json()]);
+  const [ar, en, tr] = await Promise.all([arRes.json(), enRes.json(), trRes.json()]);
   const verses = ar.verses.map((v, i) => ({
     key: v.verse_key,
     num: parseInt(v.verse_key.split(':')[1]),
     ar: v.text_uthmani,
-    en: (en.translations[i]?.text || '').replace(/<[^>]+>/g, '')
+    en: (en.translations[i]?.text || '').replace(/<[^>]+>/g, ''),
+    tr: (tr.transliterations?.[i]?.text || '').replace(/<[^>]+>/g, '')
   }));
   SURAH_CACHE[num] = verses;
   return verses;
@@ -239,7 +241,6 @@ async function fetchFullSurah(num) {
 function renderFullSurah(num, meta, verses) {
   const bism = num !== 1 && num !== 9 ? '<div class="bism-view">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' : '';
   const pill = meta?.type === 'Meccan' ? '<span class="pill pg">Makki</span>' : '<span class="pill ps">Madani</span>';
-
   const html = `
     <div class="quran-view-head">
       <div><h2 style="font-family:var(--fd);font-size:1.5rem;font-weight:300;letter-spacing:-.03em;margin-bottom:5px">${meta.en}</h2><p style="font-size:13px;color:var(--t4)">${meta.meaning} · ${meta.ayat} ayat · ${pill}</p></div>
@@ -248,7 +249,9 @@ function renderFullSurah(num, meta, verses) {
     <div class="quran-settings">
       <button class="qset" onclick="fontDec()">A−</button>
       <button class="qset" onclick="fontInc()">A+</button>
+      <button class="qset on" id="trBtn" onclick="toggleSurahTr()">Transliteration</button>
       <button class="qset" onclick="playFullSurah(${num})">▶ Play Surah</button>
+      <button class="qset" onclick="downloadSurah(${num})">⬇ Download</button>
     </div>
     ${bism}
     <div class="cs" id="fullAyat">${verses.map(v => fullAyahCard(num, v, meta)).join('')}</div>`;
@@ -256,18 +259,51 @@ function renderFullSurah(num, meta, verses) {
   applyFontSize();
 }
 
+let SHOW_TR = true;
+function toggleSurahTr() {
+  SHOW_TR = !SHOW_TR;
+  document.querySelectorAll('.full-tr').forEach(e => e.style.display = SHOW_TR ? 'block' : 'none');
+  const btn = document.getElementById('trBtn');
+  if (btn) btn.classList.toggle('on', SHOW_TR);
+}
+
+function downloadSurah(num) {
+  const verses = SURAH_CACHE[num];
+  if (!verses) { toast('Load the surah first'); return; }
+  const meta = SURAHS.find(s => s.num === num);
+  let txt = `${meta.en} (${meta.ar}) — ${meta.meaning}\n`;
+  txt += `${'═'.repeat(50)}\n\n`;
+  verses.forEach(v => {
+    txt += `[${num}:${v.num}]\n`;
+    txt += `${v.ar}\n`;
+    if (v.tr) txt += `${v.tr}\n`;
+    txt += `${v.en}\n\n`;
+  });
+  txt += `\nAn Nur · an-nur-eosin.vercel.app`;
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${meta.en.replace(/[^a-z0-9]/gi,'_')}_Quran.txt`;
+  a.click();
+  toast('Downloading…');
+}
+
 function fullAyahCard(surahNum, v, meta) {
   const uid = 'fa' + surahNum + '_' + v.num;
   const bmOn = BM.some(b => b.type === 'ayah' && b.s == surahNum && b.a == v.num);
   return `<div class="card" id="card-${uid}">
     <div class="ch">
-      <div class="cm"><span class="cr">${meta.en}</span><span class="cs2">${surahNum}:${v.num}</span></div>
+      <div class="cm"><span class="cs2" style="font-size:13px;font-weight:600;color:var(--t2)">${surahNum}:${v.num}</span></div>
       <div class="cbs">
-        <button class="cb ${bmOn ? 'bm' : ''}" id="bm-${uid}" onclick="toggleBm('${uid}','ayah',${surahNum},${v.num})"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
-        <button class="cb" onclick="playAyah('${uid}',${surahNum},${v.num})"><svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor"><path d="M2 1l8 5-8 5z"/></svg></button>
+        <button class="cb ${bmOn ? 'bm' : ''}" id="bm-${uid}" onclick="toggleBm('${uid}','ayah',${surahNum},${v.num})" title="Bookmark"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
+        <button class="cb" onclick="playAyah('${uid}',${surahNum},${v.num})" title="Play"><svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor"><path d="M2 1l8 5-8 5z"/></svg></button>
+        <button class="share-btn" onclick="openShareDirect2('${v.ar.replace(/'/g,'').substring(0,40)}','${v.en.replace(/'/g,'').replace(/"/g,'').substring(0,100)}','${meta.en} ${surahNum}:${v.num}')">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9.5" cy="2.5" r="1.5"/><circle cx="2.5" cy="6" r="1.5"/><circle cx="9.5" cy="9.5" r="1.5"/><path d="M4 6.8l4 1.9M8 2.8L4 5"/></svg>
+        </button>
       </div>
     </div>
     <div class="arabic full-ar">${v.ar}</div>
+    ${v.tr ? `<div class="full-tr" style="font-size:13px;color:var(--t3);font-style:italic;line-height:1.7;margin-bottom:.75rem;display:${SHOW_TR?'block':'none'}">${v.tr}</div>` : ''}
     <div class="trs full-en">${v.en}</div>
     <div class="aw" id="aw-${uid}">${audioHTML(uid)}</div>
   </div>`;
@@ -360,6 +396,12 @@ function hadithCard(h) {
     <div class="h-ar">${h.ar}</div>
     <div class="h-txt">"${h.en}"</div>
     <div class="h-narr">Narrated by ${h.narr}</div>
+    <div style="margin-top:.75rem">
+      <button class="share-btn" onclick="openShareDirect('${h.ar.substring(0,30).replace(/'/g,'')}','${h.en.substring(0,80).replace(/'/g,'')}','Narrated by ${h.narr} · ${h.src}')">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9.5" cy="2.5" r="1.5"/><circle cx="2.5" cy="6" r="1.5"/><circle cx="9.5" cy="9.5" r="1.5"/><path d="M4 6.8l4 1.9M8 2.8L4 5"/></svg>
+        Share
+      </button>
+    </div>
   </div>`;
 }
 function toggleBmHadith(uid, snippet) {
@@ -650,4 +692,152 @@ function toast(m) {
   el.classList.add('on');
   clearTimeout(TT);
   TT = setTimeout(() => el.classList.remove('on'), 2200);
+}
+
+// ═══ DU'AS ═══
+const DUA_CATS = ['All','Morning','Evening','Salah','Daily Life','Travel','Hardship','Forgiveness','Special'];
+let ACTIVE_DUA_CAT = 'All';
+let SHARE_DATA = null;
+
+function renderDuas(cat = 'All') {
+  ACTIVE_DUA_CAT = cat;
+  // Render category pills
+  document.getElementById('duaCats').innerHTML = DUA_CATS.map(c =>
+    `<button class="fc ${c === cat ? 'on' : ''}" onclick="renderDuas('${c}')">${c}</button>`
+  ).join('');
+  // Render duas
+  const list = cat === 'All' ? DUAS : DUAS.filter(d => d.cat === cat);
+  document.getElementById('duaGrid').innerHTML = list.map((d, i) => duaCard(d, i)).join('');
+}
+
+function duaCard(d, i) {
+  return `<div class="dua-card">
+    <div class="dua-cat-pill">${d.cat}</div>
+    <div class="dua-title">${d.title}</div>
+    <div class="dua-ar">${d.ar}</div>
+    <div class="dua-tr">${d.tr}</div>
+    <div class="dua-en">"${d.en}"</div>
+    <div class="dua-src">Source: ${d.src}</div>
+    <div class="dua-actions">
+      <button class="share-btn" onclick="openShare('dua',${i})">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9.5" cy="2.5" r="1.5"/><circle cx="2.5" cy="6" r="1.5"/><circle cx="9.5" cy="9.5" r="1.5"/><path d="M4 6.8l4 1.9M8 2.8L4 5"/></svg>
+        Share
+      </button>
+    </div>
+  </div>`;
+}
+
+// ═══ SHARE ═══
+function openShare(type, idx) {
+  let ar, en, ref, tr = '';
+  if (type === 'dua') {
+    const d = ACTIVE_DUA_CAT === 'All' ? DUAS[idx] : DUAS.filter(x => x.cat === ACTIVE_DUA_CAT)[idx];
+    ar = d.ar; en = d.en; ref = `${d.title} · ${d.src}`; tr = d.tr;
+  } else if (type === 'ayah') {
+    const a = AYAT[idx];
+    ar = a.ar; en = a.en; ref = `${a.sn} ${a.s}:${a.a}`; tr = a.tr || '';
+  } else if (type === 'hadith') {
+    const h = HADITH[idx];
+    ar = h.ar; en = h.en; ref = `Narrated by ${h.narr} · ${h.src}`; tr = '';
+  }
+  SHARE_DATA = { ar, en, ref, tr };
+  document.getElementById('sharePreview').innerHTML = `
+    <div class="share-ar">${ar}</div>
+    ${tr ? `<div style="font-size:12px;color:var(--t3);font-style:italic;text-align:right;margin-bottom:.5rem">${tr}</div>` : ''}
+    <div class="share-en">"${en}"</div>
+    <div class="share-ref">${ref}</div>
+    <div class="share-watermark">an-nur-eosin.vercel.app</div>`;
+  document.getElementById('shareModal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeShare() {
+  document.getElementById('shareModal').classList.remove('on');
+  document.body.style.overflow = '';
+}
+
+function buildShareText() {
+  if (!SHARE_DATA) return '';
+  return `${SHARE_DATA.ar}\n\n"${SHARE_DATA.en}"\n\n— ${SHARE_DATA.ref}\n\nAn Nur · an-nur-eosin.vercel.app`;
+}
+
+function copyShare() {
+  navigator.clipboard.writeText(buildShareText()).then(() => {
+    toast('Copied ✓');
+    closeShare();
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = buildShareText();
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Copied ✓');
+    closeShare();
+  });
+}
+
+function waShare() {
+  const text = encodeURIComponent(buildShareText());
+  window.open(`https://wa.me/?text=${text}`, '_blank');
+  closeShare();
+}
+
+function xShare() {
+  // X has 280 char limit so send shorter version
+  const short = `"${SHARE_DATA.en}"\n\n— ${SHARE_DATA.ref}\n\nan-nur-eosin.vercel.app`;
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(short)}`, '_blank');
+  closeShare();
+}
+
+// Add share buttons to existing ayah cards (inject into renderDaily)
+const _origRenderDaily = renderDaily;
+// Patch: add share to daily ayah card
+function addShareToCards() {
+  // Add share btn to all ayah card action rows — done via data in cardHTML override below
+}
+
+// Override goPage to init duas
+const _origGoPage = goPage;
+function goPage(p) {
+  _origGoPage(p);
+  if (p === 'duas') renderDuas(ACTIVE_DUA_CAT);
+}
+
+// ═══ SHARE HELPERS ═══
+function openShareAyah(s, a) {
+  const ayah = AYAT.find(x => x.s == s && x.a == a);
+  if (!ayah) return;
+  SHARE_DATA = { ar: ayah.ar, en: ayah.en, ref: `${ayah.sn} ${ayah.s}:${ayah.a}`, tr: ayah.tr || '' };
+  document.getElementById('sharePreview').innerHTML = `
+    <div class="share-ar">${ayah.ar}</div>
+    ${ayah.tr ? `<div style="font-size:12px;color:var(--t3);font-style:italic;text-align:right;margin-bottom:.5rem">${ayah.tr}</div>` : ''}
+    <div class="share-en">"${ayah.en}"</div>
+    <div class="share-ref">${ayah.sn} ${ayah.s}:${ayah.a}</div>
+    <div class="share-watermark">an-nur-eosin.vercel.app · An Nur</div>`;
+  document.getElementById('shareModal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function openShareDirect(ar, en, ref) {
+  SHARE_DATA = { ar, en, ref, tr: '' };
+  document.getElementById('sharePreview').innerHTML = `
+    <div class="share-ar">${ar}…</div>
+    <div class="share-en">"${en}…"</div>
+    <div class="share-ref">${ref}</div>
+    <div class="share-watermark">an-nur-eosin.vercel.app · An Nur</div>`;
+  document.getElementById('shareModal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function openShareDirect2(ar, en, ref) {
+  SHARE_DATA = { ar, en, ref, tr: '' };
+  document.getElementById('sharePreview').innerHTML = `
+    <div class="share-ar">${ar}…</div>
+    <div class="share-en">"${en}…"</div>
+    <div class="share-ref">${ref}</div>
+    <div class="share-watermark">an-nur-eosin.vercel.app · An Nur</div>`;
+  document.getElementById('shareModal').classList.add('on');
+  document.body.style.overflow = 'hidden';
 }

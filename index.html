@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#faf9f7">
 <title>An Nur — Qur'an · Hadith · Names of Allah</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23c96442'/%3E%3Ctext x='50%25' y='68%25' text-anchor='middle' font-size='22' fill='white'%3Eن%3C/text%3E%3C/svg%3E">
+<script defer src="https://cloud.umami.is/script.js" data-website-id="5ff00002-dd84-4326-91d1-6a3efa5c6981"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..500;1,9..144,200..400&family=Geist:wght@300;400;500&family=Amiri+Quran&display=swap" rel="stylesheet">
@@ -196,8 +197,38 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
 .fls a{font-size:13px;color:var(--t4);cursor:pointer}
 .fls a:hover{color:var(--t1)}
 .fc2{font-size:12px;color:var(--t4);width:100%;text-align:center;margin-top:.5rem}
+.share-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--sgs);border:.5px solid var(--sgb);border-radius:20px;color:var(--sg);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.share-btn:hover{background:var(--sgb);color:var(--sg)}
+.share-modal{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:1rem}
+.share-modal.on{display:flex}
+.share-box{background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);padding:1.75rem;box-shadow:var(--sh3);max-width:440px;width:100%}
+.share-title{font-family:var(--fd);font-size:1.1rem;font-weight:400;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
+.share-preview{background:var(--bg);border:.5px solid var(--bd1);border-radius:var(--r2);padding:1.25rem;margin-bottom:1.25rem}
+.share-ar{font-family:var(--fa);font-size:1.4rem;direction:rtl;text-align:right;color:var(--t1);line-height:2;margin-bottom:.5rem}
+.share-en{font-family:var(--fd);font-size:13px;font-style:italic;color:var(--t2);line-height:1.6;border-left:2px solid var(--acb);padding-left:10px}
+.share-ref{font-size:11.5px;color:var(--t4);margin-top:.75rem}
+.share-watermark{font-family:var(--fd);font-size:11px;color:var(--ac);margin-top:.75rem;font-style:italic}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap}
+.share-action{flex:1;min-width:120px;padding:9px 14px;border-radius:var(--r1);font-size:13px;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.share-copy{background:var(--bg2);color:var(--t1);border:.5px solid var(--bd2)}
+.share-copy:hover{background:var(--bg3)}
+.share-wa{background:#25d366;color:#fff}
+.share-wa:hover{background:#1da851}
+.share-x{background:var(--t1);color:var(--bg)}
+.share-x:hover{opacity:.85}
+.dua-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+.dua-card{background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);padding:1.4rem 1.6rem;box-shadow:var(--sh1);margin-bottom:10px;transition:all .2s var(--e)}
+.dua-card:hover{border-color:var(--bd3);box-shadow:var(--sh2)}
+.dua-title{font-family:var(--fd);font-size:15px;font-weight:400;color:var(--t1);margin-bottom:.25rem}
+.dua-cat-pill{display:inline-flex;padding:2px 9px;border-radius:12px;font-size:11px;background:var(--bls);color:var(--bl);border:.5px solid var(--blb);margin-bottom:.75rem}
+.dua-ar{font-family:var(--fa);font-size:clamp(1.3rem,3.4vw,1.8rem);line-height:2;direction:rtl;text-align:right;color:var(--t1);margin-bottom:.75rem}
+.dua-tr{font-size:13px;color:var(--t3);font-style:italic;margin-bottom:.75rem;line-height:1.6}
+.dua-en{font-family:var(--fd);font-size:14px;font-weight:300;font-style:italic;color:var(--t2);line-height:1.75;border-left:2px solid var(--blb);padding-left:13px;margin-bottom:.75rem}
+.dua-src{font-size:12px;color:var(--t4)}
+.dua-actions{display:flex;gap:6px;margin-top:.75rem;flex-wrap:wrap}
 .back-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:transparent;border:.5px solid var(--bd2);border-radius:var(--r1);color:var(--t2);font-size:13px;cursor:pointer;margin-bottom:1rem}
 .back-btn:hover{background:var(--bg2);color:var(--t1)}
+
 .prayer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1rem}
 .prayer-card{background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r2);padding:1rem;text-align:center;box-shadow:var(--sh1);transition:all .18s var(--e)}
 .prayer-card.next{border-color:var(--acb);background:var(--acs)}
@@ -258,6 +289,7 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
       <button class="nb" onclick="goPage('prayer')">Prayer</button>
       <button class="nb" onclick="goPage('tasbih')">Tasbih</button>
       <button class="nb" onclick="goPage('qibla')">Qibla</button>
+      <button class="nb" onclick="goPage('duas')">Du'as</button>
       <button class="nb" onclick="goPage('khutbah')">Khutbah</button>
       <button class="nb" onclick="goPage('bookmarks')">Saved</button>
     </nav>
@@ -278,6 +310,7 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
   <button class="nb" onclick="goPage('prayer');closeMobile()">Prayer Times</button>
   <button class="nb" onclick="goPage('tasbih');closeMobile()">Tasbih</button>
   <button class="nb" onclick="goPage('qibla');closeMobile()">Qibla</button>
+  <button class="nb" onclick="goPage('duas');closeMobile()">Du'as</button>
   <button class="nb" onclick="goPage('khutbah');closeMobile()">Khutbah</button>
   <button class="nb" onclick="goPage('bookmarks');closeMobile()">Saved</button>
   <button class="nb" onclick="goPage('about');closeMobile()">About</button>
@@ -340,6 +373,7 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
         <div class="qh-card" onclick="goPage('prayer')"><div class="qh-ico">🕌</div><div class="qh-info"><div class="qh-title">Prayer Times</div><div class="qh-sub">Based on your location</div></div></div>
         <div class="qh-card" onclick="goPage('tasbih')"><div class="qh-ico">📿</div><div class="qh-info"><div class="qh-title">Digital Tasbih</div><div class="qh-sub">Counter for dhikr</div></div></div>
         <div class="qh-card" onclick="goPage('qibla')"><div class="qh-ico">🧭</div><div class="qh-info"><div class="qh-title">Qibla Finder</div><div class="qh-sub">Direction to Makkah</div></div></div>
+        <div class="qh-card" onclick="goPage('duas')"><div class="qh-ico">🤲</div><div class="qh-info"><div class="qh-title">Du'as & Adhkar</div><div class="qh-sub">Morning · Evening · Daily · Travel</div></div></div>
         <div class="qh-card" onclick="goPage('khutbah')"><div class="qh-ico">🎥</div><div class="qh-info"><div class="qh-title">Friday Khutbah</div><div class="qh-sub">Watch this week</div></div></div>
       </div>
     </section>
@@ -375,6 +409,15 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
   <section class="sec">
     <div class="sh"><h2 class="st">99 Names of Allah</h2><span class="sm">Al-Asma ul-Husna</span></div>
     <p style="font-size:13px;color:var(--t3);line-height:1.7;margin-bottom:1rem;padding:13px 15px;background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r2)">The Prophet ﷺ said: <em>"Allah has ninety-nine Names. Whoever preserves them will enter Paradise."</em> — Bukhari & Muslim</p>
+    <div style="background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);overflow:hidden;margin-bottom:1.25rem;box-shadow:var(--sh2)">
+      <div style="position:relative;padding-bottom:56.25%;height:0">
+        <iframe src="https://www.youtube.com/embed/lgm3puP3tMA?list=RDlgm3puP3tMA" title="99 Names of Allah" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:var(--r2) var(--r2) 0 0"></iframe>
+      </div>
+      <div style="padding:.9rem 1.2rem;border-top:.5px solid var(--bd1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <div><div style="font-family:var(--fd);font-size:14px;color:var(--t1)">99 Names of Allah — Beautiful Recitation</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Listen while you read the Names below</div></div>
+        <a href="https://youtu.be/lgm3puP3tMA?list=RDlgm3puP3tMA" target="_blank" rel="noopener" style="font-size:12px;color:var(--ac);display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2c-.3-1-1-1.8-2-2C19.7 3.7 12 3.7 12 3.7s-7.7 0-9.5.5c-1 .2-1.7 1-2 2C0 8 0 12 0 12s0 4 .5 5.8c.3 1 1 1.8 2 2 1.8.5 9.5.5 9.5.5s7.7 0 9.5-.5c1-.2 1.7-1 2-2C24 16 24 12 24 12s0-4-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>YouTube</a>
+      </div>
+    </div>
     <input class="si2" type="text" placeholder="Search a Name…" oninput="filterNames(this.value)" id="nsi" style="margin-bottom:1rem"/>
     <div class="names-grid" id="ng"></div>
   </section>
@@ -487,6 +530,32 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
     </div>
     <div style="text-align:center;padding:2rem;background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);margin-top:1rem"><p style="font-family:var(--fa);font-size:1.7rem;color:var(--t2);margin-bottom:.75rem">اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ</p><p style="font-family:var(--fd);font-style:italic;color:var(--t3)">"Allah is the Light of the heavens and the earth." — An-Nur 24:35</p><p style="font-size:12px;color:var(--t4);margin-top:1rem">May Allah accept it. 🤍</p></div>
   </section>
+</div>
+
+<!-- DU'AS -->
+<div id="page-duas" class="page">
+  <section class="sec">
+    <div class="sh"><h2 class="st">Du'as & Adhkar</h2><span class="sm">30 duas for every occasion</span></div>
+    <p style="font-size:13px;color:var(--t3);line-height:1.7;margin-bottom:1.25rem;padding:12px 14px;background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r2)">The Prophet ﷺ said: <em>"Du'a is worship."</em> — Tirmidhi. Tap the share button on any du'a to send it to someone.</p>
+    <div class="dua-cats" id="duaCats"></div>
+    <div id="duaGrid"></div>
+  </section>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="share-modal" id="shareModal" onclick="if(event.target===this)closeShare()">
+  <div class="share-box">
+    <div class="share-title">
+      <span>Share this</span>
+      <button class="back-btn" style="margin:0;padding:4px 10px" onclick="closeShare()">✕</button>
+    </div>
+    <div class="share-preview" id="sharePreview"></div>
+    <div class="share-btns">
+      <button class="share-action share-copy" onclick="copyShare()">📋 Copy Text</button>
+      <button class="share-action share-wa" onclick="waShare()">WhatsApp</button>
+      <button class="share-action share-x" onclick="xShare()">Post on X</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"><span class="td"></span><span id="tm"></span></div>
