@@ -1,4 +1,4 @@
-// ═══════════════ STATE ═══════════════
+// ═══ STATE ═══
 let BM = JSON.parse(localStorage.getItem('annur_bm') || '[]');
 let REC = localStorage.getItem('annur_rec') || 'Alafasy_128kbps';
 let FILT = 'all';
@@ -6,30 +6,40 @@ let AUD = null, AUDID = null;
 let STYPE = 'all';
 let STM = null;
 let CID = 0;
+let SURAH_CACHE = {};
+let FONT_SIZE = parseInt(localStorage.getItem('annur_fs') || '18');
+let TASBIH = parseInt(localStorage.getItem('annur_tas') || '0');
+let TASBIH_TARGET = parseInt(localStorage.getItem('annur_tas_t') || '33');
+let TASBIH_DHIKR = localStorage.getItem('annur_tas_d') || 'سُبْحَانَ اللَّهِ';
+let TASBIH_TR = localStorage.getItem('annur_tas_tr') || 'SubhanAllah — Glory be to Allah';
 
 const RECITERS = [
-  { id: 'Alafasy_128kbps', name: 'Mishary Alafasy' },
+  { id: 'Alafasy_128kbps', name: 'Alafasy' },
   { id: 'Abdul_Basit_Murattal_192kbps', name: 'Abdul Basit' },
-  { id: 'Maher_AlMuaiqly_128kbps', name: 'Maher Al-Muaiqly' },
-  { id: 'Minshawi_Murattal_128kbps', name: 'Al-Minshawi' }
+  { id: 'Maher_AlMuaiqly_128kbps', name: 'Maher' },
+  { id: 'Minshawi_Murattal_128kbps', name: 'Minshawi' }
 ];
 
-// ═══════════════ INIT ═══════════════
+const KAABA_LAT = 21.4225, KAABA_LNG = 39.8262;
+
+// ═══ INIT ═══
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
-  document.getElementById('tod').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('tod').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   renderDaily();
   renderSurahGrid();
   renderNames();
   renderHadith();
   renderStories();
   renderBookmarks();
+  loadTasbih();
 });
 
-// ═══════════════ THEME ═══════════════
+function closeMobile() { document.getElementById('mn').classList.remove('on'); }
+
+// ═══ THEME ═══
 function initTheme() {
-  const t = localStorage.getItem('annur_th') || 'light';
-  document.documentElement.setAttribute('data-theme', t);
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('annur_th') || 'light');
 }
 function toggleTheme() {
   const c = document.documentElement.getAttribute('data-theme');
@@ -39,81 +49,82 @@ function toggleTheme() {
   toast(n === 'dark' ? '🌙 Dark mode' : '☀️ Light mode');
 }
 
-// ═══════════════ NAV ═══════════════
+// ═══ NAV ═══
 function goPage(p) {
   document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
   document.querySelectorAll('#nav .nb').forEach(x => x.classList.remove('on'));
   const el = document.getElementById('page-' + p);
   if (el) el.classList.add('on');
-  const ps = ['home', 'surahs', 'names', 'hadith', 'stories', 'khutbah', 'bookmarks', 'about'];
+  const ps = ['home', 'surahs', 'names', 'hadith', 'stories', 'prayer', 'tasbih', 'qibla', 'khutbah', 'bookmarks'];
   const i = ps.indexOf(p);
   if (i >= 0) document.querySelectorAll('#nav .nb')[i]?.classList.add('on');
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (p === 'bookmarks') renderBookmarks();
+  if (p === 'prayer') loadPrayerTimes();
+  if (p === 'qibla') getQibla();
 }
 
-// ═══════════════ DAILY ROTATION ═══════════════
 function dayOfYear() {
   const d = new Date();
   return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
 }
 
+// ═══ DAILY ═══
 function renderDaily() {
   const day = dayOfYear();
 
-  // Daily Ayah
+  // Ayah
   const a = AYAT[day % AYAT.length];
   const pill = a.rev === 'Meccan' ? '<span class="pill pg">Makki</span>' : '<span class="pill ps">Madani</span>';
   const bmOn = BM.some(b => b.type === 'ayah' && b.s == a.s && b.a == a.a);
-  document.getElementById('daily-ayah').innerHTML = `
-    <div class="de ac"><svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><path d="M5.5.5l1.09 3.36H10L7.2 5.77l1.09 3.36L5.5 7.22 2.71 9.13 3.8 5.77 1 3.86h3.41z"/></svg>Ayah of the Day</div>
+  document.getElementById('d-ayah').innerHTML = `
+    <div class="de ac">✦ Ayah of the Day</div>
     <div class="da">${a.ar}</div>
     <div class="dt">"${a.en}"</div>
     <div class="df">
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${pill}<span style="font-size:14px;color:var(--t2);font-weight:500">${a.sn}</span><span style="font-size:13px;color:var(--t4)">${a.s}:${a.a}</span></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${pill}<span style="font-size:13px;color:var(--t2);font-weight:500">${a.sn}</span><span style="font-size:12px;color:var(--t4)">${a.s}:${a.a}</span></div>
       <div style="display:flex;gap:6px">
         <button class="cb" onclick="playAyah('da',${a.s},${a.a})" title="Play"><svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor"><path d="M2 1l8 5-8 5z"/></svg></button>
-        <button class="cb ${bmOn ? 'bm' : ''}" id="bm-da" onclick="toggleBm('da','ayah',${a.s},${a.a})" title="Bookmark"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
+        <button class="cb ${bmOn ? 'bm' : ''}" id="bm-da" onclick="toggleBm('da','ayah',${a.s},${a.a})" title="Bookmark"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
       </div>
     </div>
     <div class="aw" id="aw-da">${audioHTML('da')}</div>`;
 
-  // Daily Name
+  // Name
   const n = NAMES[day % NAMES.length];
-  document.getElementById('daily-name').innerHTML = `
-    <div class="de gd"><svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><path d="M5.5.5l1.09 3.36H10L7.2 5.77l1.09 3.36L5.5 7.22 2.71 9.13 3.8 5.77 1 3.86h3.41z"/></svg>Name of Allah</div>
+  document.getElementById('d-name').innerHTML = `
+    <div class="de gd">✦ Name of Allah</div>
     <div class="name-ar">${n.ar}</div>
     <div class="name-tr">${n.tr}</div>
-    <div class="name-meaning">${n.mean}</div>
+    <div class="name-mean">${n.mean}</div>
     <div class="name-desc">${n.desc}</div>
     <div style="text-align:center;margin-top:1rem"><span class="pill pg">#${n.n} of 99</span></div>`;
 
-  // Daily Hadith
+  // Hadith
   const h = HADITH[day % HADITH.length];
-  const authPill = h.auth === 'Sahih' ? '<span class="h-auth">✓ Sahih (Authentic)</span>' : '<span class="h-auth weak">Hasan (Good)</span>';
-  document.getElementById('daily-hadith').innerHTML = `
-    <div class="de sg"><svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><path d="M5.5.5l1.09 3.36H10L7.2 5.77l1.09 3.36L5.5 7.22 2.71 9.13 3.8 5.77 1 3.86h3.41z"/></svg>Hadith of the Day</div>
-    <div style="font-family:var(--fa);font-size:1.3rem;direction:rtl;text-align:right;color:var(--t1);margin-bottom:1rem;line-height:1.9">${h.ar}</div>
+  const authP = h.auth === 'Sahih' ? '<span class="h-auth">✓ Sahih</span>' : '<span class="h-auth hasan">Hasan</span>';
+  document.getElementById('d-hadith').innerHTML = `
+    <div class="de sg">✦ Hadith of the Day</div>
+    <div style="font-family:var(--fa);font-size:1.2rem;direction:rtl;text-align:right;color:var(--t1);margin-bottom:.9rem;line-height:1.9">${h.ar}</div>
     <div class="hadith-text">"${h.en}"</div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${authPill}<span class="hadith-src">${h.src}</span></div>
-      <span style="font-size:12px;color:var(--t4)">Narrated by ${h.narr}</span>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${authP}<span style="font-size:12px;color:var(--t4)">${h.src}</span></div>
+      <span style="font-size:11.5px;color:var(--t4)">Narrated by ${h.narr}</span>
     </div>`;
 
-  // Daily Story
+  // Story
   const s = STORIES[day % STORIES.length];
   const short = s.body.split('\n\n')[0];
-  document.getElementById('daily-story').innerHTML = `
-    <div class="de bl"><svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><path d="M5.5.5l1.09 3.36H10L7.2 5.77l1.09 3.36L5.5 7.22 2.71 9.13 3.8 5.77 1 3.86h3.41z"/></svg>Story of the Day</div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap"><span style="font-size:32px">${s.icon}</span><div><div style="font-family:var(--fd);font-size:1.15rem;font-weight:400">${s.name}</div><div style="font-size:12px;color:var(--t4)">${s.sub}</div></div></div>
+  document.getElementById('d-story').innerHTML = `
+    <div class="de bl">✦ Story of the Day</div>
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:1rem;flex-wrap:wrap"><span style="font-size:28px">${s.icon}</span><div><div style="font-family:var(--fd);font-size:1.1rem">${s.name}</div><div style="font-size:12px;color:var(--t4)">${s.sub}</div></div></div>
     <div class="story-txt">${short}</div>
-    <button class="fc" style="font-size:12.5px" onclick="goPage('stories');setTimeout(()=>document.getElementById('story-${day % STORIES.length}')?.scrollIntoView({behavior:'smooth'}),100)">Read full story →</button>`;
+    <button class="fc" style="font-size:12px" onclick="goPage('stories');setTimeout(()=>document.getElementById('story-${day % STORIES.length}')?.scrollIntoView({behavior:'smooth'}),100)">Read full →</button>`;
 }
 
-// ═══════════════ SEARCH ═══════════════
+// ═══ SEARCH ═══
 function onInput() {
   const q = document.getElementById('sq').value.trim();
-  document.getElementById('sx').classList.toggle('on', q.length > 0);
   clearTimeout(STM);
   if (!q) { clearSearch(); return; }
   STM = setTimeout(doSearch, 250);
@@ -127,7 +138,6 @@ function setFilter(btn, f) {
 }
 function clearSearch() {
   document.getElementById('sq').value = '';
-  document.getElementById('sx').classList.remove('on');
   document.getElementById('resSec').style.display = 'none';
   document.getElementById('homeContent').style.display = 'block';
 }
@@ -141,47 +151,28 @@ function doSearch() {
   document.getElementById('rg').innerHTML = '';
 
   setTimeout(() => {
-    const results = { ayat: [], names: [], hadith: [], stories: [] };
-    if (FILT === 'all' || FILT === 'ayat') {
-      results.ayat = AYAT.filter(a => `${a.en} ${a.tr} ${a.sn} ${a.th.join(' ')}`.toLowerCase().includes(q)).slice(0, 10);
-    }
-    if (FILT === 'all' || FILT === 'names') {
-      results.names = NAMES.filter(n => `${n.tr} ${n.mean} ${n.desc}`.toLowerCase().includes(q)).slice(0, 8);
-    }
-    if (FILT === 'all' || FILT === 'hadith') {
-      results.hadith = HADITH.filter(h => `${h.en} ${h.narr} ${h.cat}`.toLowerCase().includes(q)).slice(0, 8);
-    }
-    if (FILT === 'all' || FILT === 'stories') {
-      results.stories = STORIES.filter(s => `${s.name} ${s.sub} ${s.body} ${s.lesson}`.toLowerCase().includes(q)).slice(0, 5);
-    }
+    const r = { ayat: [], names: [], hadith: [], stories: [] };
+    if (FILT === 'all' || FILT === 'ayat') r.ayat = AYAT.filter(a => `${a.en} ${a.tr} ${a.sn}`.toLowerCase().includes(q)).slice(0, 10);
+    if (FILT === 'all' || FILT === 'names') r.names = NAMES.filter(n => `${n.tr} ${n.mean} ${n.desc}`.toLowerCase().includes(q)).slice(0, 8);
+    if (FILT === 'all' || FILT === 'hadith') r.hadith = HADITH.filter(h => `${h.en} ${h.narr} ${h.cat}`.toLowerCase().includes(q)).slice(0, 8);
+    if (FILT === 'all' || FILT === 'stories') r.stories = STORIES.filter(s => `${s.name} ${s.sub} ${s.body}`.toLowerCase().includes(q)).slice(0, 5);
 
-    const total = results.ayat.length + results.names.length + results.hadith.length + results.stories.length;
+    const total = r.ayat.length + r.names.length + r.hadith.length + r.stories.length;
     document.getElementById('ld').classList.remove('on');
-    document.getElementById('resCount').textContent = total + ' found';
+    document.getElementById('rc').textContent = total + ' found';
 
-    if (total === 0) {
-      document.getElementById('es').classList.add('on');
-      return;
-    }
+    if (total === 0) { document.getElementById('es').classList.add('on'); return; }
 
     let html = '';
-    if (results.ayat.length) {
-      html += `<h3 style="font-family:var(--fd);font-size:.95rem;color:var(--t3);margin:1rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Ayat (${results.ayat.length})</h3><div class="cs">${results.ayat.map(a => cardHTML(a, q)).join('')}</div>`;
-    }
-    if (results.names.length) {
-      html += `<h3 style="font-family:var(--fd);font-size:.95rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Names of Allah (${results.names.length})</h3><div class="names-grid">${results.names.map(nameCard).join('')}</div>`;
-    }
-    if (results.hadith.length) {
-      html += `<h3 style="font-family:var(--fd);font-size:.95rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Hadith (${results.hadith.length})</h3>${results.hadith.map(hadithCard).join('')}`;
-    }
-    if (results.stories.length) {
-      html += `<h3 style="font-family:var(--fd);font-size:.95rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Stories (${results.stories.length})</h3>${results.stories.map((s,i)=>storyCard(s,i)).join('')}`;
-    }
+    if (r.ayat.length) html += `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Ayat (${r.ayat.length})</h3><div class="cs">${r.ayat.map(a => cardHTML(a, q)).join('')}</div>`;
+    if (r.names.length) html += `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Names (${r.names.length})</h3><div class="names-grid">${r.names.map(nameCard).join('')}</div>`;
+    if (r.hadith.length) html += `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Hadith (${r.hadith.length})</h3>${r.hadith.map(hadithCard).join('')}`;
+    if (r.stories.length) html += `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Stories (${r.stories.length})</h3>${r.stories.map((s, i) => storyCard(s, i)).join('')}`;
     document.getElementById('rg').innerHTML = html;
-  }, 200);
+  }, 180);
 }
 
-// ═══════════════ SURAH GRID ═══════════════
+// ═══ SURAH GRID ═══
 function renderSurahGrid(f = '', t = 'all') {
   const list = SURAHS.filter(s => {
     const nm = !f || s.en.toLowerCase().includes(f.toLowerCase()) || s.ar.includes(f) || s.meaning.toLowerCase().includes(f.toLowerCase());
@@ -202,22 +193,122 @@ function setSType(btn, t) {
   btn.classList.add('on');
   renderSurahGrid(document.getElementById('ssi').value, t);
 }
-function openSurah(num) {
-  goPage('sv');
+
+// ═══ FULL SURAH VIEW (Quran.com API) ═══
+async function openSurah(num) {
   const meta = SURAHS.find(s => s.num === num);
-  const ayat = AYAT.filter(a => a.s === num);
-  const bism = num !== 1 && num !== 9 ? '<div style="text-align:center;font-family:var(--fa);font-size:2rem;color:var(--t2);padding:1.5rem;margin-bottom:1.25rem;background:var(--bg3);border:.5px solid var(--gdb);border-radius:var(--r2);box-shadow:var(--sh1)">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' : '';
-  const pill = meta?.type === 'Meccan' ? '<span class="pill pg">Makki</span>' : '<span class="pill ps">Madani</span>';
-  document.getElementById('svc').innerHTML = `
-    <div style="background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);padding:1.75rem 2rem;margin-bottom:1.5rem;box-shadow:var(--sh1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
-      <div><h2 style="font-family:var(--fd);font-size:1.6rem;font-weight:300;letter-spacing:-.03em;margin-bottom:6px">${meta?.en || 'Surah ' + num}</h2><p style="font-size:13px;color:var(--t4)">${meta?.meaning || ''} · ${meta?.ayat || ''} ayat · ${pill}</p></div>
-      <div style="font-family:var(--fa);font-size:2.2rem;color:var(--t2);text-align:right">${meta?.ar || ''}</div>
-    </div>
-    ${bism}
-    ${ayat.length ? '<div class="cs">' + ayat.map(a => cardHTML(a)).join('') + '</div>' : '<div style="padding:2rem;text-align:center;color:var(--t4);font-size:14px">No curated ayat available for this surah yet.</div>'}`;
+  const fsv = document.getElementById('fullSurahView');
+  fsv.classList.add('on');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('fsTitle').innerHTML = `<span style="color:var(--t3)">${meta?.num}</span> &nbsp;${meta?.en} <span style="color:var(--t4);font-size:.85em">· ${meta?.meaning}</span>`;
+  document.getElementById('fsAr').textContent = meta?.ar;
+  document.getElementById('fsBody').innerHTML = `<div class="ld on"><div class="d"></div><div class="d"></div><div class="d"></div></div><div style="text-align:center;color:var(--t4);font-size:13px;margin-top:1rem">Loading ${meta.ayat} ayat from Quran.com…</div>`;
+
+  try {
+    const ayat = await fetchFullSurah(num);
+    renderFullSurah(num, meta, ayat);
+  } catch (e) {
+    document.getElementById('fsBody').innerHTML = `
+      <div style="text-align:center;padding:2rem;color:var(--t3);font-size:14px;line-height:1.8">
+        <div style="font-size:40px;margin-bottom:1rem">⚠️</div>
+        <h3 style="font-family:var(--fd);font-weight:300;font-size:1.3rem;color:var(--t2);margin-bottom:.5rem">Couldn't load surah</h3>
+        <p style="font-size:13px;color:var(--t4)">This usually works fine once deployed to Vercel or GitHub Pages.<br>In some preview environments, external API calls are blocked.</p>
+        <a href="https://quran.com/${num}" target="_blank" style="display:inline-block;margin-top:1rem;padding:8px 18px;background:var(--ac);color:#fff;border-radius:9px;font-size:13px">Read on Quran.com →</a>
+      </div>`;
+  }
 }
 
-// ═══════════════ 99 NAMES ═══════════════
+async function fetchFullSurah(num) {
+  if (SURAH_CACHE[num]) return SURAH_CACHE[num];
+  // Quran.com API v4 — free, no key needed
+  const [arRes, enRes] = await Promise.all([
+    fetch(`https://api.quran.com/api/v4/quran/verses/uthmani?chapter_number=${num}`),
+    fetch(`https://api.quran.com/api/v4/quran/translations/131?chapter_number=${num}`)
+  ]);
+  const [ar, en] = await Promise.all([arRes.json(), enRes.json()]);
+  const verses = ar.verses.map((v, i) => ({
+    key: v.verse_key,
+    num: parseInt(v.verse_key.split(':')[1]),
+    ar: v.text_uthmani,
+    en: (en.translations[i]?.text || '').replace(/<[^>]+>/g, '')
+  }));
+  SURAH_CACHE[num] = verses;
+  return verses;
+}
+
+function renderFullSurah(num, meta, verses) {
+  const bism = num !== 1 && num !== 9 ? '<div class="bism-view">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' : '';
+  const pill = meta?.type === 'Meccan' ? '<span class="pill pg">Makki</span>' : '<span class="pill ps">Madani</span>';
+
+  const html = `
+    <div class="quran-view-head">
+      <div><h2 style="font-family:var(--fd);font-size:1.5rem;font-weight:300;letter-spacing:-.03em;margin-bottom:5px">${meta.en}</h2><p style="font-size:13px;color:var(--t4)">${meta.meaning} · ${meta.ayat} ayat · ${pill}</p></div>
+      <div style="font-family:var(--fa);font-size:2.2rem;color:var(--t2)">${meta.ar}</div>
+    </div>
+    <div class="quran-settings">
+      <button class="qset" onclick="fontDec()">A−</button>
+      <button class="qset" onclick="fontInc()">A+</button>
+      <button class="qset" onclick="playFullSurah(${num})">▶ Play Surah</button>
+    </div>
+    ${bism}
+    <div class="cs" id="fullAyat">${verses.map(v => fullAyahCard(num, v, meta)).join('')}</div>`;
+  document.getElementById('fsBody').innerHTML = html;
+  applyFontSize();
+}
+
+function fullAyahCard(surahNum, v, meta) {
+  const uid = 'fa' + surahNum + '_' + v.num;
+  const bmOn = BM.some(b => b.type === 'ayah' && b.s == surahNum && b.a == v.num);
+  return `<div class="card" id="card-${uid}">
+    <div class="ch">
+      <div class="cm"><span class="cr">${meta.en}</span><span class="cs2">${surahNum}:${v.num}</span></div>
+      <div class="cbs">
+        <button class="cb ${bmOn ? 'bm' : ''}" id="bm-${uid}" onclick="toggleBm('${uid}','ayah',${surahNum},${v.num})"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
+        <button class="cb" onclick="playAyah('${uid}',${surahNum},${v.num})"><svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor"><path d="M2 1l8 5-8 5z"/></svg></button>
+      </div>
+    </div>
+    <div class="arabic full-ar">${v.ar}</div>
+    <div class="trs full-en">${v.en}</div>
+    <div class="aw" id="aw-${uid}">${audioHTML(uid)}</div>
+  </div>`;
+}
+
+function closeSurah() {
+  document.getElementById('fullSurahView').classList.remove('on');
+  document.body.style.overflow = '';
+  stopAud();
+}
+
+function fontInc() { FONT_SIZE = Math.min(30, FONT_SIZE + 2); localStorage.setItem('annur_fs', FONT_SIZE); applyFontSize(); }
+function fontDec() { FONT_SIZE = Math.max(14, FONT_SIZE - 2); localStorage.setItem('annur_fs', FONT_SIZE); applyFontSize(); }
+function applyFontSize() {
+  document.querySelectorAll('.full-ar').forEach(e => e.style.fontSize = (FONT_SIZE + 6) + 'px');
+  document.querySelectorAll('.full-en').forEach(e => e.style.fontSize = FONT_SIZE + 'px');
+}
+
+function playFullSurah(num) {
+  toast('Starting surah recitation…');
+  // Play first ayah, chain to next
+  const verses = SURAH_CACHE[num];
+  if (!verses || !verses.length) return;
+  playChain(num, verses, 0);
+}
+function playChain(num, verses, idx) {
+  if (idx >= verses.length) { toast('Surah complete 🤍'); return; }
+  const v = verses[idx];
+  const uid = 'fa' + num + '_' + v.num;
+  playAyah(uid, num, v.num);
+  const check = setInterval(() => {
+    if (!AUD) { clearInterval(check); return; }
+    if (AUD.ended) {
+      clearInterval(check);
+      document.getElementById('card-' + uid)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => playChain(num, verses, idx + 1), 400);
+    }
+  }, 400);
+}
+
+// ═══ NAMES ═══
 function renderNames(filter = '') {
   const f = filter.toLowerCase();
   const list = f ? NAMES.filter(n => n.tr.toLowerCase().includes(f) || n.mean.toLowerCase().includes(f) || n.desc.toLowerCase().includes(f)) : NAMES;
@@ -225,35 +316,29 @@ function renderNames(filter = '') {
 }
 function filterNames(v) { renderNames(v); }
 function nameCard(n) {
-  return `<div class="ncard" onclick="openName(${n.n})">
-    <div class="n-num">${n.n}</div>
-    <div class="n-ar">${n.ar}</div>
-    <div class="n-tr">${n.tr}</div>
-    <div class="n-mean">${n.mean}</div>
-  </div>`;
+  return `<div class="ncard" onclick="openName(${n.n})"><div class="n-num">${n.n}</div><div class="n-ar">${n.ar}</div><div class="n-tr">${n.tr}</div><div class="n-mn">${n.mean}</div></div>`;
 }
 function openName(num) {
   const n = NAMES.find(x => x.n === num);
   if (!n) return;
-  goPage('nv');
   const bmOn = BM.some(b => b.type === 'name' && b.n === num);
-  document.getElementById('nvc').innerHTML = `
+  const fsv = document.getElementById('fullSurahView');
+  fsv.classList.add('on');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('fsTitle').innerHTML = `Name <span style="color:var(--t3)">#${n.n}</span>`;
+  document.getElementById('fsAr').textContent = '';
+  document.getElementById('fsBody').innerHTML = `
     <div style="background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);padding:2.5rem 2rem;box-shadow:var(--sh2);text-align:center">
       <div style="display:inline-block;font-size:12px;color:var(--gd);background:var(--gds);border:.5px solid var(--gdb);border-radius:20px;padding:4px 14px;margin-bottom:1.5rem">Name ${n.n} of 99</div>
       <div style="font-family:var(--fa);font-size:clamp(3rem,8vw,5rem);color:var(--t1);line-height:1.2;margin-bottom:1rem">${n.ar}</div>
       <div style="font-family:var(--fd);font-size:2rem;font-weight:300;color:var(--gd);letter-spacing:-.02em;margin-bottom:.5rem">${n.tr}</div>
       <div style="font-size:16px;color:var(--t2);font-style:italic;margin-bottom:1.5rem">${n.mean}</div>
       <div style="font-size:14.5px;color:var(--t2);line-height:1.8;max-width:600px;margin:0 auto;font-weight:300">${n.desc}</div>
-      <div style="margin-top:2rem;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button class="cb ${bmOn ? 'bm' : ''}" id="bm-nv" onclick="toggleBm('nv','name',${num},0)" style="padding:8px 16px;width:auto;gap:6px">
-          <svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg>
-          ${bmOn ? 'Bookmarked' : 'Bookmark'}
-        </button>
-      </div>
+      <button class="fc ${bmOn ? 'on' : ''}" style="margin-top:2rem;padding:8px 16px" onclick="toggleBm('nv','name',${num},0);this.classList.toggle('on')">${bmOn ? 'Bookmarked ✓' : 'Bookmark'}</button>
     </div>`;
 }
 
-// ═══════════════ HADITH ═══════════════
+// ═══ HADITH ═══
 function renderHadith(filter = '') {
   const f = filter.toLowerCase();
   const list = f ? HADITH.filter(h => (h.en + ' ' + h.narr + ' ' + h.cat + ' ' + h.src).toLowerCase().includes(f)) : HADITH;
@@ -263,22 +348,22 @@ function filterHadith(v) { renderHadith(v); }
 function hadithCard(h) {
   const uid = 'h' + (++CID);
   const bmOn = BM.some(b => b.type === 'hadith' && b.en === h.en);
-  const authPill = h.auth === 'Sahih' ? '<span class="h-auth">✓ Sahih (Authentic)</span>' : '<span class="h-auth weak">Hasan (Good)</span>';
+  const authP = h.auth === 'Sahih' ? '<span class="h-auth">✓ Sahih</span>' : '<span class="h-auth hasan">Hasan</span>';
   return `<div class="hcard">
     <div class="h-head">
-      ${authPill}
+      ${authP}
       <span class="h-src">${h.src}</span>
       ${h.num ? `<span class="pill pa">40 Nawawi #${h.num}</span>` : ''}
       <span class="pill pb">${h.cat}</span>
-      <button class="cb ${bmOn ? 'bm' : ''}" id="bm-${uid}" onclick="toggleBmHadith('${uid}','${h.en.replace(/'/g,"\\'").substring(0,100)}')" style="margin-left:auto"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
+      <button class="cb ${bmOn ? 'bm' : ''}" id="bm-${uid}" onclick="toggleBmHadith('${uid}',\`${h.en.replace(/`/g, '').substring(0, 80)}\`)" style="margin-left:auto"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
     </div>
     <div class="h-ar">${h.ar}</div>
     <div class="h-txt">"${h.en}"</div>
     <div class="h-narr">Narrated by ${h.narr}</div>
   </div>`;
 }
-function toggleBmHadith(uid, enSnippet) {
-  const h = HADITH.find(x => x.en.substring(0, 100) === enSnippet);
+function toggleBmHadith(uid, snippet) {
+  const h = HADITH.find(x => x.en.substring(0, 80) === snippet);
   if (!h) return;
   const i = BM.findIndex(b => b.type === 'hadith' && b.en === h.en);
   if (i === -1) { BM.push({ type: 'hadith', en: h.en }); toast('Saved ✓'); }
@@ -292,46 +377,43 @@ function toggleBmHadith(uid, enSnippet) {
   }
 }
 
-// ═══════════════ STORIES ═══════════════
+// ═══ STORIES ═══
 function renderStories() {
   document.getElementById('stg').innerHTML = STORIES.map((s, i) => storyCard(s, i)).join('');
 }
 function storyCard(s, idx) {
   const paras = s.body.split('\n\n').map(p => `<p>${p}</p>`).join('');
   return `<div class="story-card" id="story-${idx}">
-    <div class="story-head">
-      <div class="story-ico">${s.icon}</div>
-      <div><div class="story-title">${s.name}</div><div class="story-subtitle">${s.sub}</div></div>
-    </div>
+    <div class="story-head"><div class="story-ico">${s.icon}</div><div><div class="story-title">${s.name}</div><div class="story-sub">${s.sub}</div></div></div>
     <div class="story-body">${paras}</div>
     <div class="story-lesson"><strong>Reflection:</strong> ${s.lesson}</div>
   </div>`;
 }
 
-// ═══════════════ BOOKMARKS ═══════════════
+// ═══ BOOKMARKS ═══
 function renderBookmarks() {
   document.getElementById('bmc').textContent = BM.length + ' saved';
-  if (BM.length === 0) {
+  if (!BM.length) {
     document.getElementById('bg2').innerHTML = '';
     document.getElementById('be').style.display = 'block';
     return;
   }
   document.getElementById('be').style.display = 'none';
   let html = '';
-  const ayahBms = BM.filter(b => b.type === 'ayah');
-  const nameBms = BM.filter(b => b.type === 'name');
-  const hadithBms = BM.filter(b => b.type === 'hadith');
-  if (ayahBms.length) {
-    const ayat = ayahBms.map(b => AYAT.find(a => a.s == b.s && a.a == b.a)).filter(Boolean);
-    html += `<h3 style="font-family:var(--fd);font-size:1rem;color:var(--t3);margin:1rem 0 .5rem">Ayat (${ayat.length})</h3><div class="cs">${ayat.map(a => cardHTML(a)).join('')}</div>`;
+  const aBm = BM.filter(b => b.type === 'ayah');
+  const nBm = BM.filter(b => b.type === 'name');
+  const hBm = BM.filter(b => b.type === 'hadith');
+  if (aBm.length) {
+    const matched = aBm.map(b => AYAT.find(a => a.s == b.s && a.a == b.a)).filter(Boolean);
+    if (matched.length) html += `<h3 style="font-family:var(--fd);font-size:.95rem;color:var(--t3);margin:1rem 0 .5rem">Ayat (${matched.length})</h3><div class="cs">${matched.map(a => cardHTML(a)).join('')}</div>`;
   }
-  if (nameBms.length) {
-    const names = nameBms.map(b => NAMES.find(n => n.n === b.n)).filter(Boolean);
-    html += `<h3 style="font-family:var(--fd);font-size:1rem;color:var(--t3);margin:1.5rem 0 .5rem">Names (${names.length})</h3><div class="names-grid">${names.map(nameCard).join('')}</div>`;
+  if (nBm.length) {
+    const matched = nBm.map(b => NAMES.find(n => n.n === b.n)).filter(Boolean);
+    html += `<h3 style="font-family:var(--fd);font-size:.95rem;color:var(--t3);margin:1.5rem 0 .5rem">Names (${matched.length})</h3><div class="names-grid">${matched.map(nameCard).join('')}</div>`;
   }
-  if (hadithBms.length) {
-    const hads = hadithBms.map(b => HADITH.find(h => h.en === b.en)).filter(Boolean);
-    html += `<h3 style="font-family:var(--fd);font-size:1rem;color:var(--t3);margin:1.5rem 0 .5rem">Hadith (${hads.length})</h3>${hads.map(hadithCard).join('')}`;
+  if (hBm.length) {
+    const matched = hBm.map(b => HADITH.find(h => h.en === b.en)).filter(Boolean);
+    html += `<h3 style="font-family:var(--fd);font-size:.95rem;color:var(--t3);margin:1.5rem 0 .5rem">Hadith (${matched.length})</h3>${matched.map(hadithCard).join('')}`;
   }
   document.getElementById('bg2').innerHTML = html;
 }
@@ -362,7 +444,7 @@ function toggleBm(uid, type, s, a) {
   }
 }
 
-// ═══════════════ AYAT CARDS ═══════════════
+// ═══ AYAH CARDS ═══
 function cardHTML(a, q = '') {
   const uid = 'c' + (++CID);
   const bmOn = BM.some(b => b.type === 'ayah' && b.s == a.s && b.a == a.a);
@@ -372,8 +454,8 @@ function cardHTML(a, q = '') {
       <div class="cm">${pill}<span class="cr">${a.sn}</span><span class="cs2">· ${a.s}:${a.a}</span></div>
       <div class="cbs">
         <button class="cb" title="Transliteration" onclick="toggleTr('${uid}')"><svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1.5 2.5h10M1.5 5h7M1.5 7.5h5"/></svg></button>
-        <button class="cb ${bmOn ? 'bm' : ''}" id="bm-${uid}" title="Bookmark" onclick="toggleBm('${uid}','ayah',${a.s},${a.a})"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
-        <button class="cb" title="Play" onclick="playAyah('${uid}',${a.s},${a.a})"><svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor"><path d="M2 1l8 5-8 5z"/></svg></button>
+        <button class="cb ${bmOn ? 'bm' : ''}" id="bm-${uid}" onclick="toggleBm('${uid}','ayah',${a.s},${a.a})"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
+        <button class="cb" onclick="playAyah('${uid}',${a.s},${a.a})"><svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor"><path d="M2 1l8 5-8 5z"/></svg></button>
       </div>
     </div>
     <div class="arabic">${a.ar}</div>
@@ -394,7 +476,7 @@ function hl(t, q) {
   return r;
 }
 
-// ═══════════════ AUDIO ═══════════════
+// ═══ AUDIO ═══
 function audioHTML(uid) {
   return `<button class="pc" id="pc-${uid}" onclick="togglePP('${uid}')"><svg width="11" height="13" viewBox="0 0 11 13" fill="white"><path d="M2 1.5l8 5-8 5z"/></svg></button>
     <div class="pw"><div class="pb2" onclick="seekA(event,this)"><div class="pf" id="pf-${uid}"></div></div><span class="pt" id="pt-${uid}">0:00</span></div>
@@ -410,10 +492,7 @@ function playAyah(uid, s, a) {
   }
   stopAud();
   const s3 = String(s).padStart(3, '0'), a3 = String(a).padStart(3, '0');
-  const urls = [
-    `https://everyayah.com/data/${REC}/${s3}${a3}.mp3`,
-    `https://everyayah.com/data/Alafasy_128kbps/${s3}${a3}.mp3`
-  ];
+  const urls = [`https://everyayah.com/data/${REC}/${s3}${a3}.mp3`, `https://everyayah.com/data/Alafasy_128kbps/${s3}${a3}.mp3`];
   const tryPlay = (i = 0) => {
     if (i >= urls.length) { showAudioErr(uid); AUD = null; AUDID = null; return; }
     AUD = new Audio(urls[i]); AUDID = uid;
@@ -435,9 +514,7 @@ function stopAud() { if (AUD) { AUD.pause(); if (AUDID) setPI(AUDID, false); AUD
 function setPI(uid, pl) {
   const btn = document.getElementById('pc-' + uid);
   if (!btn) return;
-  btn.innerHTML = pl
-    ? '<svg width="9" height="11" viewBox="0 0 9 11" fill="white"><rect x=".5" y=".5" width="3" height="10" rx="1"/><rect x="5.5" y=".5" width="3" height="10" rx="1"/></svg>'
-    : '<svg width="11" height="13" viewBox="0 0 11 13" fill="white"><path d="M2 1.5l8 5-8 5z"/></svg>';
+  btn.innerHTML = pl ? '<svg width="9" height="11" viewBox="0 0 9 11" fill="white"><rect x=".5" y=".5" width="3" height="10" rx="1"/><rect x="5.5" y=".5" width="3" height="10" rx="1"/></svg>' : '<svg width="11" height="13" viewBox="0 0 11 13" fill="white"><path d="M2 1.5l8 5-8 5z"/></svg>';
 }
 function chRec(v) { REC = v; localStorage.setItem('annur_rec', v); }
 function seekA(e, bar) { if (!AUD || !AUD.duration) return; const r = bar.getBoundingClientRect(); AUD.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * AUD.duration; }
@@ -445,10 +522,127 @@ function fmt(s) { return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().
 function showAudioErr(uid) {
   const aw = document.getElementById('aw-' + uid);
   if (!aw) return;
-  aw.innerHTML = `<div style="display:flex;align-items:center;gap:10px;width:100%;flex-wrap:wrap;font-size:13px;color:var(--t3)">⚠️ Audio blocked in preview — works once deployed to Vercel/GitHub Pages. <a href="https://everyayah.com" target="_blank" style="color:var(--ac);text-decoration:underline">Open EveryAyah →</a></div>`;
+  aw.innerHTML = `<div style="font-size:12.5px;color:var(--t3);width:100%">⚠️ Audio works once deployed. <a href="https://everyayah.com" target="_blank" style="color:var(--ac)">EveryAyah ↗</a></div>`;
 }
 
-// ═══════════════ TOAST ═══════════════
+// ═══ PRAYER TIMES ═══
+function loadPrayerTimes() {
+  if (!navigator.geolocation) {
+    document.getElementById('prBody').innerHTML = '<div class="es on"><h3>Location needed</h3><p>Your browser does not support geolocation.</p></div>';
+    return;
+  }
+  document.getElementById('prLoc').textContent = 'Getting location…';
+  navigator.geolocation.getCurrentPosition(
+    pos => fetchPrayer(pos.coords.latitude, pos.coords.longitude),
+    err => {
+      document.getElementById('prBody').innerHTML = `<div class="es on"><h3>Location denied</h3><p>Enable location to see prayer times for your area.</p><button class="fc" onclick="loadPrayerTimes()" style="margin-top:1rem">Try again</button></div>`;
+    },
+    { timeout: 10000, enableHighAccuracy: false }
+  );
+}
+
+async function fetchPrayer(lat, lng) {
+  try {
+    const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=2`);
+    const data = await res.json();
+    if (data.code !== 200) throw new Error();
+    const t = data.data.timings;
+    const city = data.data.meta.timezone || 'Your location';
+    document.getElementById('prLoc').textContent = city;
+
+    const now = new Date();
+    const curMin = now.getHours() * 60 + now.getMinutes();
+    const prayers = [
+      { name: 'Fajr', time: t.Fajr },
+      { name: 'Sunrise', time: t.Sunrise },
+      { name: 'Dhuhr', time: t.Dhuhr },
+      { name: 'Asr', time: t.Asr },
+      { name: 'Maghrib', time: t.Maghrib },
+      { name: 'Isha', time: t.Isha }
+    ];
+    let nextIdx = prayers.findIndex(p => {
+      const [h, m] = p.time.split(':').map(Number);
+      return h * 60 + m > curMin;
+    });
+    if (nextIdx === -1) nextIdx = 0;
+
+    document.getElementById('prBody').innerHTML = `
+      <div class="prayer-grid">
+        ${prayers.map((p, i) => `
+          <div class="prayer-card ${i === nextIdx ? 'next' : ''}">
+            <div class="p-name">${p.name}</div>
+            <div class="p-time">${p.time}</div>
+            ${i === nextIdx ? '<div class="p-next">Next prayer</div>' : ''}
+          </div>`).join('')}
+      </div>
+      <div style="text-align:center;margin-top:1.5rem;padding:13px 15px;background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r2);font-size:12.5px;color:var(--t3)">📅 ${data.data.date.readable} · ${data.data.date.hijri.date} AH<br>Method: Islamic Society of North America · Timings may vary slightly by method</div>`;
+  } catch (e) {
+    document.getElementById('prBody').innerHTML = `<div class="es on"><h3>Couldn't load prayer times</h3><p>This usually works once deployed. Try again in a moment.</p></div>`;
+  }
+}
+
+// ═══ TASBIH ═══
+function loadTasbih() {
+  document.getElementById('tCount').textContent = TASBIH;
+  document.getElementById('tDhikr').textContent = TASBIH_DHIKR;
+  document.getElementById('tTr').textContent = TASBIH_TR;
+  document.getElementById('tTarget').textContent = `Target: ${TASBIH_TARGET}`;
+}
+function incTasbih() {
+  TASBIH++;
+  localStorage.setItem('annur_tas', TASBIH);
+  document.getElementById('tCount').textContent = TASBIH;
+  if (navigator.vibrate) navigator.vibrate(20);
+  if (TASBIH === TASBIH_TARGET) toast('Target reached ✓ SubhanAllah');
+}
+function resetTasbih() {
+  TASBIH = 0;
+  localStorage.setItem('annur_tas', 0);
+  document.getElementById('tCount').textContent = 0;
+  toast('Reset');
+}
+function setDhikr(ar, tr, target) {
+  TASBIH_DHIKR = ar; TASBIH_TR = tr; TASBIH_TARGET = target;
+  localStorage.setItem('annur_tas_d', ar);
+  localStorage.setItem('annur_tas_tr', tr);
+  localStorage.setItem('annur_tas_t', target);
+  resetTasbih();
+  loadTasbih();
+}
+
+// ═══ QIBLA ═══
+function getQibla() {
+  if (!navigator.geolocation) {
+    document.getElementById('qiblaDir').textContent = 'Geolocation not supported';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      const qibla = calculateQibla(lat, lng);
+      document.getElementById('qiblaDir').textContent = `${qibla.toFixed(1)}° from North`;
+      document.getElementById('qiblaInfo').innerHTML = `Your location: ${lat.toFixed(3)}°, ${lng.toFixed(3)}°<br>Face this direction for salah.`;
+      document.getElementById('needle').style.transform = `rotate(${qibla}deg)`;
+    },
+    () => {
+      document.getElementById('qiblaDir').textContent = 'Location denied';
+      document.getElementById('qiblaInfo').textContent = 'Enable location to find the qibla direction.';
+    }
+  );
+}
+
+function calculateQibla(lat, lng) {
+  const toRad = x => x * Math.PI / 180;
+  const toDeg = x => x * 180 / Math.PI;
+  const φ1 = toRad(lat), φ2 = toRad(KAABA_LAT);
+  const Δλ = toRad(KAABA_LNG - lng);
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  let θ = toDeg(Math.atan2(y, x));
+  return (θ + 360) % 360;
+}
+
+// ═══ TOAST ═══
 let TT;
 function toast(m) {
   const el = document.getElementById('toast');
