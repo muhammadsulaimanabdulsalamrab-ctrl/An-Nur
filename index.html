@@ -109,7 +109,7 @@ nav::-webkit-scrollbar{display:none}
 .cb:hover{background:var(--bg2);color:var(--t1)}
 .cb.bm{background:var(--gds);color:var(--gd);border-color:var(--gdb)}
 .arabic{font-family:var(--fa);font-size:clamp(1.35rem,3.6vw,1.9rem);line-height:2.1;direction:rtl;text-align:right;color:var(--t1);margin-bottom:1rem}
-.trl{font-size:13px;color:var(--t3);font-style:italic;margin-bottom:.75rem;display:none}
+.trl{font-size:13px;color:var(--t2);font-style:italic;line-height:1.75;margin-bottom:.85rem;display:none;padding:.7rem .85rem;background:var(--gds);border:.5px solid var(--gdb);border-radius:var(--r1)}
 .trl.on{display:block}
 .trs{font-family:var(--fd);font-size:14.5px;font-weight:300;font-style:italic;color:var(--t2);line-height:1.75;border-left:2px solid var(--bd2);padding-left:14px}
 .aw{display:none;margin-top:1rem;padding:9px 12px;background:var(--bg2);border:.5px solid var(--bd1);border-radius:var(--r1);align-items:center;gap:10px;flex-wrap:wrap}
@@ -352,8 +352,8 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
       <div class="stats">
         <div class="stat"><div class="sv"><em>114</em></div><div class="sl">Surahs · 6,236 Ayat</div></div>
         <div class="stat"><div class="sv"><em>99</em></div><div class="sl">Names of Allah</div></div>
-        <div class="stat"><div class="sv"><em>45+</em></div><div class="sl">Authentic Hadith</div></div>
-        <div class="stat"><div class="sv"><em>15+</em></div><div class="sl">Prophet Stories</div></div>
+        <div class="stat"><div class="sv"><em data-hadith-count>45+</em></div><div class="sl">Authentic Hadith</div></div>
+        <div class="stat"><div class="sv"><em data-story-count>15+</em></div><div class="sl">Prophet Stories</div></div>
       </div>
 
       <div class="sh"><h2 class="st">Today's Reflections</h2><span class="sm" id="tod"></span></div>
@@ -535,7 +535,7 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
 <!-- DU'AS -->
 <div id="page-duas" class="page">
   <section class="sec">
-    <div class="sh"><h2 class="st">Du'as & Adhkar</h2><span class="sm">30 duas for every occasion</span></div>
+    <div class="sh"><h2 class="st">Du'as & Adhkar</h2><span class="sm">32 duas for every occasion</span></div>
     <p style="font-size:13px;color:var(--t3);line-height:1.7;margin-bottom:1.25rem;padding:12px 14px;background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r2)">The Prophet ﷺ said: <em>"Du'a is worship."</em> — Tirmidhi. Tap the share button on any du'a to send it to someone.</p>
     <div class="dua-cats" id="duaCats"></div>
     <div id="duaGrid"></div>
@@ -564,13 +564,15 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
   <div class="fi">
     <span class="fl2">An <em>Nur</em></span>
     <div class="fls">
-      <a onclick="goPage('surahs')">Qur'an</a><a onclick="goPage('names')">99 Names</a><a onclick="goPage('hadith')">Hadith</a><a onclick="goPage('stories')">Stories</a><a onclick="goPage('prayer')">Prayer</a><a onclick="goPage('about')">About</a>
+      <a onclick="goPage('surahs')">Qur'an</a><a onclick="goPage('names')">99 Names</a><a onclick="goPage('hadith')">Hadith</a><a onclick="goPage('stories')">Stories</a><a onclick="goPage('duas')">Du'as</a><a onclick="goPage('prayer')">Prayer</a><a onclick="goPage('about')">About</a>
     </div>
     <p class="fc2">Free forever · Built as sadaqah jariyah · May Allah accept it 🤍</p>
   </div>
 </footer>
 
 <script src="data.js"></script>
+<script src="content-plus.js"></script>
+<script src="quran-full.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
