@@ -59,6 +59,21 @@ const DUAS_DATA = typeof DUAS_EXTRA !== 'undefined' && Array.isArray(DUAS_EXTRA)
 // Reading progress
 let READ_SET = new Set(JSON.parse(localStorage.getItem('annur_read') || '[]'));
 
+// ═══ TASBIH SEQUENCE ═══
+const TASBIH_SEQ = [
+  { ar: 'سُبْحَانَ اللَّهِ', tr: 'SubhanAllah — Glory be to Allah', target: 33 },
+  { ar: 'الْحَمْدُ لِلَّهِ', tr: 'Alhamdulillah — Praise be to Allah', target: 33 },
+  { ar: 'اللَّهُ أَكْبَرُ', tr: 'Allahu Akbar — Allah is Greatest', target: 34 }
+];
+let TASBIH_SEQ_IDX = parseInt(localStorage.getItem('annur_tas_seq') || '0');
+let TASBIH_CYCLES = parseInt(localStorage.getItem('annur_tas_cycles_' + new Date().toDateString()) || '0');
+
+// ═══ SAJDA VERSES ═══
+const SAJDA_VERSES = new Set(['7:206','13:15','16:50','17:109','19:58','22:18','22:77','25:60','27:26','32:15','38:24','41:38','53:62','84:21','96:19']);
+
+// ═══ HIJRI CALENDAR ═══
+const HIJRI_MONTHS = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Awwal','Jumada al-Thani','Rajab',"Sha'ban",'Ramadan','Shawwal',"Dhul Qi'dah",'Dhul Hijjah'];
+
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -74,6 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDuas();
   updateReadProgress();
   renderJuzGrid();
+  renderHijriDate();
+  renderEventsStrip();
+  checkStreak();
   // Handle PWA shortcut ?p= param
   const urlP = new URLSearchParams(location.search).get('p');
   if (urlP) goPage(urlP);
@@ -106,7 +124,7 @@ function goPage(p) {
   document.querySelectorAll('#nav .nb').forEach(x => x.classList.remove('on'));
   const el = document.getElementById('page-' + p);
   if (el) el.classList.add('on');
-  const ps = ['home', 'surahs', 'names', 'hadith', 'stories', 'prayer', 'tasbih', 'qibla', 'duas', 'khutbah', 'bookmarks'];
+  const ps = ['home', 'surahs', 'names', 'hadith', 'stories', 'prayer', 'tasbih', 'qibla', 'duas', 'khutbah', 'bookmarks', 'sadqa', 'community'];
   const i = ps.indexOf(p);
   if (i >= 0) document.querySelectorAll('#nav .nb')[i]?.classList.add('on');
   // sync bottom nav
@@ -386,6 +404,7 @@ function markRead(surahNum) {
   READ_SET.add(surahNum);
   localStorage.setItem('annur_read', JSON.stringify([...READ_SET]));
   updateReadProgress();
+  updateStreak();
 }
 function updateReadProgress() {
   const n = READ_SET.size;
@@ -643,12 +662,14 @@ function downloadTransliteration(num) {
 function fullAyahCard(surahNum, v, meta) {
   const uid = 'fa' + surahNum + '_' + v.num;
   const bmOn = BM.some(b => b.type === 'ayah' && b.s == surahNum && b.a == v.num);
+  const isSajda = SAJDA_VERSES.has(`${surahNum}:${v.num}`);
   return `<div class="card" id="card-${uid}">
     <div class="ch">
-      <div class="cm"><span class="cs2" style="font-size:13px;font-weight:600;color:var(--t2)">${surahNum}:${v.num}</span></div>
+      <div class="cm"><span class="cs2" style="font-size:13px;font-weight:600;color:var(--t2)">${surahNum}:${v.num}</span>${isSajda ? '<span class="sajda-badge" title="Prostration required">سجدة</span>' : ''}</div>
       <div class="cbs">
         <button class="cb ${bmOn ? 'bm' : ''}" id="bm-${uid}" onclick="toggleBm('${uid}','ayah',${surahNum},${v.num})" title="Bookmark"><svg width="10" height="12" viewBox="0 0 10 12" fill="${bmOn ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M1.5 1.5h7v9L5 8 1.5 10.5z"/></svg></button>
         <button class="cb" onclick="playAyah('${uid}',${surahNum},${v.num})" title="Play"><svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor"><path d="M2 1l8 5-8 5z"/></svg></button>
+        <button class="cb" onclick="openReflections(${surahNum},${v.num})" title="Reflections">💬</button>
         <button class="share-btn" onclick="openShareAyah(${surahNum},${v.num})" title="Share ${meta.en} ${surahNum}:${v.num}">
           <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="9.5" cy="2.5" r="1.5"/><circle cx="2.5" cy="6" r="1.5"/><circle cx="9.5" cy="9.5" r="1.5"/><path d="M4 6.8l4 1.9M8 2.8L4 5"/></svg>
         </button>
@@ -1083,25 +1104,82 @@ function startPrayerCountdown(timeStr) {
 }
 
 // ═══ TASBIH ═══
+function updateTasbihRing() {
+  const ring = document.getElementById('tRingProg');
+  if (!ring) return;
+  const offset = 490 * (1 - Math.min(TASBIH, TASBIH_TARGET) / TASBIH_TARGET);
+  ring.setAttribute('stroke-dashoffset', offset.toFixed(1));
+  const wrap = document.querySelector('.tasbih-ring');
+  if (wrap) wrap.classList.toggle('done', TASBIH >= TASBIH_TARGET);
+}
+function updateSeqButtons() {
+  document.querySelectorAll('.tas-seq-btn').forEach((btn, i) => {
+    btn.classList.toggle('on', i === TASBIH_SEQ_IDX);
+  });
+  const lbl = document.getElementById('tCycleLabel');
+  if (lbl) lbl.textContent = TASBIH_SEQ[TASBIH_SEQ_IDX].tr.split('—')[0].trim();
+}
 function loadTasbih() {
+  const seq = TASBIH_SEQ[TASBIH_SEQ_IDX];
+  TASBIH_DHIKR = seq.ar; TASBIH_TR = seq.tr; TASBIH_TARGET = seq.target;
   document.getElementById('tCount').textContent = TASBIH;
   document.getElementById('tDhikr').textContent = TASBIH_DHIKR;
   document.getElementById('tTr').textContent = TASBIH_TR;
   document.getElementById('tTarget').textContent = `Target: ${TASBIH_TARGET}`;
+  const cyc = document.getElementById('tCycles');
+  if (cyc) cyc.textContent = TASBIH_CYCLES > 0 ? `${TASBIH_CYCLES} cycle${TASBIH_CYCLES !== 1 ? 's' : ''} today` : '';
+  updateTasbihRing();
+  updateSeqButtons();
+}
+function setSeqDhikr(idx) {
+  TASBIH_SEQ_IDX = idx;
+  localStorage.setItem('annur_tas_seq', idx);
+  TASBIH = 0;
+  localStorage.setItem('annur_tas', 0);
+  loadTasbih();
 }
 function incTasbih() {
   TASBIH++;
   localStorage.setItem('annur_tas', TASBIH);
   document.getElementById('tCount').textContent = TASBIH;
-  if (navigator.vibrate) navigator.vibrate(20);
+  if (navigator.vibrate) navigator.vibrate(10);
   const btn = document.querySelector('.tasbih-btn');
   if (btn) { btn.classList.remove('tap'); void btn.offsetWidth; btn.classList.add('tap'); }
-  if (TASBIH === TASBIH_TARGET) toast('Target reached ✓ SubhanAllah');
+  updateTasbihRing();
+  if (TASBIH >= TASBIH_TARGET) {
+    const nextIdx = TASBIH_SEQ_IDX + 1;
+    if (nextIdx < TASBIH_SEQ.length) {
+      if (navigator.vibrate) navigator.vibrate([30, 20, 60]);
+      setTimeout(() => {
+        TASBIH_SEQ_IDX = nextIdx;
+        localStorage.setItem('annur_tas_seq', nextIdx);
+        TASBIH = 0;
+        localStorage.setItem('annur_tas', 0);
+        loadTasbih();
+        toast(`✓ ${TASBIH_SEQ[nextIdx - 1].tr.split('—')[0].trim()} complete → ${TASBIH_SEQ[nextIdx].tr.split('—')[0].trim()}`);
+      }, 400);
+    } else {
+      // Full cycle complete
+      TASBIH_CYCLES++;
+      const today = new Date().toDateString();
+      localStorage.setItem('annur_tas_cycles_' + today, TASBIH_CYCLES);
+      if (navigator.vibrate) navigator.vibrate([50, 20, 100, 20, 150]);
+      setTimeout(() => {
+        TASBIH_SEQ_IDX = 0;
+        localStorage.setItem('annur_tas_seq', 0);
+        TASBIH = 0;
+        localStorage.setItem('annur_tas', 0);
+        loadTasbih();
+        toast(`🤲 Tasbih complete! ${TASBIH_CYCLES} cycle${TASBIH_CYCLES !== 1 ? 's' : ''} today`);
+      }, 400);
+    }
+  }
 }
 function resetTasbih() {
   TASBIH = 0;
   localStorage.setItem('annur_tas', 0);
   document.getElementById('tCount').textContent = 0;
+  updateTasbihRing();
   toast('Reset');
 }
 function setDhikr(ar, tr, target) {
@@ -1111,6 +1189,107 @@ function setDhikr(ar, tr, target) {
   localStorage.setItem('annur_tas_t', target);
   resetTasbih();
   loadTasbih();
+}
+
+// ═══ HIJRI DATE ═══
+function gregorianToHijri(date) {
+  const jd = Math.floor((date.getTime() / 86400000) + 2440587.5);
+  const z = jd;
+  const a = Math.floor((z - 1867216.25) / 36524.25);
+  const A = z + 1 + a - Math.floor(a / 4);
+  const B = A + 1524;
+  const C = Math.floor((B - 122.1) / 365.25);
+  const D = Math.floor(365.25 * C);
+  const E = Math.floor((B - D) / 30.6001);
+  const day = B - D - Math.floor(30.6001 * E);
+  const month = E < 14 ? E - 1 : E - 13;
+  const year = month > 2 ? C - 4716 : C - 4715;
+  // Julian Day to Hijri
+  const l = jd - 1948440 + 10632;
+  const n = Math.floor((l - 1) / 10631);
+  const L = l - 10631 * n + 354;
+  const j = Math.floor((10985 - L) / 5316) * Math.floor((50 * L) / 17719)
+          + Math.floor(L / 5670) * Math.floor((43 * L) / 15238);
+  const L2 = L - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50)
+           - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+  const hMonth = Math.floor((24 * L2) / 709);
+  const hDay = L2 - Math.floor((709 * hMonth) / 24);
+  const hYear = 30 * n + j - 30;
+  return { day: hDay, month: hMonth, year: hYear };
+}
+function renderHijriDate() {
+  const el = document.getElementById('hijriDate');
+  if (!el) return;
+  const h = gregorianToHijri(new Date());
+  el.textContent = `${h.day} ${HIJRI_MONTHS[h.month - 1]} ${h.year} AH`;
+}
+function getUpcomingEvents() {
+  const today = new Date();
+  const h = gregorianToHijri(today);
+  const events = [
+    { name: 'Ramadan begins', month: 9, day: 1 },
+    { name: "Laylat al-Qadr (est.)", month: 9, day: 27 },
+    { name: 'Eid ul-Fitr', month: 10, day: 1 },
+    { name: 'Day of Arafah', month: 12, day: 9 },
+    { name: 'Eid ul-Adha', month: 12, day: 10 },
+    { name: 'Day of Ashura', month: 1, day: 10 },
+    { name: 'Mawlid al-Nabawi ﷺ', month: 3, day: 12 }
+  ];
+  return events.map(ev => {
+    let daysAway;
+    if (ev.month > h.month || (ev.month === h.month && ev.day >= h.day)) {
+      daysAway = (ev.month - h.month) * 29.5 + (ev.day - h.day);
+    } else {
+      daysAway = (12 - h.month + ev.month) * 29.5 + (ev.day - h.day);
+    }
+    daysAway = Math.round(daysAway);
+    return { name: ev.name, daysAway };
+  }).filter(ev => ev.daysAway >= 0).sort((a, b) => a.daysAway - b.daysAway).slice(0, 5);
+}
+function renderEventsStrip() {
+  const el = document.getElementById('eventsStrip');
+  if (!el) return;
+  const events = getUpcomingEvents();
+  el.innerHTML = events.map(ev => {
+    const cls = ev.daysAway === 0 ? 'evt-chip today' : ev.daysAway <= 7 ? 'evt-chip soon' : 'evt-chip';
+    const label = ev.daysAway === 0 ? 'Today!' : `${ev.daysAway}d`;
+    return `<div class="${cls}"><span class="evt-name">${ev.name}</span><span class="evt-days">${label}</span></div>`;
+  }).join('');
+}
+
+// ═══ READING STREAK ═══
+function checkStreak() {
+  const el = document.getElementById('streakDisplay');
+  if (!el) return;
+  const dates = JSON.parse(localStorage.getItem('annur_streak') || '[]');
+  if (!dates.length) { el.innerHTML = ''; return; }
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  const hasToday = dates.includes(today);
+  const hasYesterday = dates.includes(yesterday);
+  let streak = 0;
+  const sorted = [...new Set(dates)].sort((a, b) => new Date(b) - new Date(a));
+  let check = new Date();
+  for (const d of sorted) {
+    if (d === check.toDateString() || d === new Date(check - 86400000).toDateString()) {
+      streak++;
+      check = new Date(d);
+    } else break;
+  }
+  if (streak > 1 || hasToday) {
+    el.innerHTML = `<span class="streak-pill">🔥 ${streak}-day streak${hasToday ? '' : ' — read today to keep it!'}</span>`;
+  } else {
+    el.innerHTML = '<span class="streak-pill" style="opacity:.7">Start your reading streak today 📖</span>';
+  }
+}
+function updateStreak() {
+  const today = new Date().toDateString();
+  const dates = JSON.parse(localStorage.getItem('annur_streak') || '[]');
+  if (!dates.includes(today)) {
+    dates.push(today);
+    localStorage.setItem('annur_streak', JSON.stringify(dates.slice(-365)));
+  }
+  checkStreak();
 }
 
 // ═══ QIBLA ═══

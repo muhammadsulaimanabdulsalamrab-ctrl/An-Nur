@@ -1,5 +1,5 @@
-const CACHE = 'annur-v1';
-const STATIC = ['/', '/index.html', '/app.js', '/data.js', '/content-plus.js', '/quran-full.js'];
+const CACHE = 'annur-v3';
+const STATIC = ['/', '/index.html', '/app.js', '/data.js', '/content-plus.js', '/quran-full.js', '/firebase-community.js'];
 
 // Install: cache static shell
 self.addEventListener('install', e => {
@@ -47,4 +47,21 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request).catch(() => caches.match(e.request))
   );
+});
+
+// Push notifications
+self.addEventListener('push', e => {
+  const data = e.data?.json?.() || {};
+  e.waitUntil(self.registration.showNotification(data.title || 'An Nur ✨', {
+    body: data.body || 'Your daily ayah awaits.',
+    icon: '/icon.svg',
+    badge: '/icon.svg',
+    tag: 'annur-daily',
+    data: { url: '/' }
+  }));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow(e.notification.data?.url || '/'));
 });

@@ -18,6 +18,21 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://an-nur-eosin.vercel.app">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="5ff00002-dd84-4326-91d1-6a3efa5c6981"></script>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, updateDoc, onSnapshot, doc, query, orderBy, limit, serverTimestamp, increment as firestoreIncrement } from 'https://www.gstatic.com/firebasejs/11.8.0/firebase-firestore.js';
+  const cfg = {
+    apiKey:"AIzaSyAYdyRC10yI_M2lGedpNxMmGAlx7A8OmDw",
+    authDomain:"an-nur-786.firebaseapp.com",
+    projectId:"an-nur-786",
+    storageBucket:"an-nur-786.firebasestorage.app",
+    messagingSenderId:"89869701938",
+    appId:"1:89869701938:web:261f8ad3694423c0793d2b"
+  };
+  const app = initializeApp(cfg);
+  window.ANNUR_DB = getFirestore(app);
+  window.ANNUR_FNS = { collection, addDoc, getDocs, getDoc, setDoc, updateDoc, onSnapshot, doc, query, orderBy, limit, serverTimestamp, firestoreIncrement };
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..500;1,9..144,200..400&family=Poppins:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&family=Amiri+Quran&display=swap" rel="stylesheet">
@@ -369,6 +384,143 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
 .jump-inp:focus{border-color:var(--acb)}
 .jump-btn{padding:4px 10px;background:var(--ac);color:#fff;border:none;border-radius:var(--r1);font-size:12px;cursor:pointer}
 
+/* ══ HIJRI DATE ══ */
+.bism-hijri{font-size:11px;color:var(--t4);margin-top:3px;font-family:var(--fb);letter-spacing:.02em}
+/* ══ ISLAMIC EVENTS STRIP ══ */
+.events-strip{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0 0 4px;margin:.75rem 0 0;justify-content:center;flex-wrap:wrap}
+.events-strip::-webkit-scrollbar{display:none}
+.evt-chip{flex-shrink:0;padding:5px 11px;background:var(--bg3);border:.5px solid var(--bd2);border-radius:20px;font-size:11.5px;color:var(--t3);white-space:nowrap;transition:all .15s;cursor:default}
+.evt-chip.soon{background:var(--gds);border-color:var(--gdb);color:var(--gd);font-weight:500}
+.evt-chip.today{background:var(--acs);border-color:var(--acb);color:var(--act);font-weight:600}
+/* ══ SAJDA BADGE ══ */
+.sajda-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;background:var(--gds);border:.5px solid var(--gdb);border-radius:10px;font-family:var(--fa);font-size:11px;color:var(--gd);margin-left:6px;vertical-align:middle;cursor:default}
+/* ══ READING STREAK ══ */
+.streak-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:var(--acs);border:.5px solid var(--acb);border-radius:20px;font-size:12px;color:var(--act);margin:.75rem 0 0}
+/* ══ TASBIH RING ══ */
+.tasbih-ring-wrap{position:relative;width:168px;height:168px;margin:0 auto 1.2rem}
+.tasbih-ring{position:absolute;inset:0;transform:rotate(-90deg);overflow:visible}
+.tasbih-ring circle.bg{fill:none;stroke:var(--bd2);stroke-width:5}
+.tasbih-ring circle.prog{fill:none;stroke:var(--ac);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .25s var(--e),stroke .25s}
+.tasbih-ring.done circle.prog{stroke:var(--gd)}
+.tasbih-btn{position:absolute;inset:14px;width:auto;height:auto;margin:0;border-radius:50%;font-size:13px}
+.tasbih-cycles{font-size:12px;color:var(--t4);margin:.4rem 0 1.2rem}
+.tasbih-seq{display:flex;gap:5px;justify-content:center;margin-bottom:1.2rem;flex-wrap:wrap}
+.tas-seq-btn{padding:5px 12px;border-radius:20px;font-size:12px;border:.5px solid var(--bd2);background:var(--bg2);color:var(--t3);cursor:pointer;transition:all .18s var(--e);font-family:var(--fa)}
+.tas-seq-btn.on{background:var(--acs);border-color:var(--acb);color:var(--act);font-weight:500}
+/* ══ SADQA PAGE ══ */
+.sadqa-hero{text-align:center;padding:3rem 1rem 2rem;max-width:640px;margin:0 auto}
+.sadqa-verse{font-family:var(--fa);font-size:clamp(1.6rem,4.5vw,2.6rem);color:var(--t1);line-height:1.9;margin-bottom:.5rem}
+.sadqa-ref{font-size:11px;color:var(--gd);font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem}
+.sadqa-trans{font-family:var(--fl);font-size:.95rem;color:var(--t3);font-style:italic;margin-bottom:2rem;line-height:1.6}
+.sadqa-heading{font-family:var(--fd);font-size:clamp(1.2rem,3vw,1.7rem);font-weight:300;color:var(--t1);margin-bottom:.5rem;letter-spacing:-.02em}
+.sadqa-sub{font-size:13.5px;color:var(--t3);margin-bottom:2.5rem;font-family:var(--fl);line-height:1.7;max-width:500px;margin-left:auto;margin-right:auto}
+.silsila{max-width:560px;margin:0 auto 2.5rem;display:flex;flex-direction:column}
+.sil-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;background:var(--bg3);border:.5px solid var(--bd1);position:relative;transition:background .15s}
+.sil-item:first-child{border-radius:var(--r2) var(--r2) 0 0}
+.sil-item:last-child{border-radius:0 0 var(--r2) var(--r2);border-bottom-color:var(--bd2)}
+.sil-item:not(:last-child)::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:.5px;background:var(--bd1);z-index:1}
+.sil-num{width:26px;height:26px;background:var(--acs);border:.5px solid var(--acb);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--act);flex-shrink:0;margin-top:3px}
+.sil-num.gold{background:var(--gds);border-color:var(--gdb);color:var(--gd)}
+.sil-ar{font-family:var(--fa);font-size:1.05rem;color:var(--t1);line-height:1.6;margin-bottom:1px}
+.sil-en{font-size:12px;color:var(--t3);font-style:italic;line-height:1.4}
+.sil-connector{width:2px;height:18px;background:linear-gradient(var(--acb),var(--bd1));margin-left:12px;margin-top:-1px;margin-bottom:-1px;flex-shrink:0}
+.sadqa-ded{max-width:560px;margin:0 auto 2rem;padding:1.75rem 1.5rem;background:linear-gradient(135deg,var(--gds) 0%,var(--acs) 100%);border:.5px solid var(--gdb);border-radius:var(--r3);text-align:center;box-shadow:var(--sh2)}
+.sadqa-ded-ar{font-family:var(--fa);font-size:clamp(1.1rem,3vw,1.5rem);color:var(--t1);line-height:2;margin-bottom:.75rem}
+.sadqa-ded-en{font-family:var(--fl);font-size:13.5px;color:var(--t2);font-style:italic;line-height:1.75}
+.sadqa-ded-sig{margin-top:1rem;font-size:12px;color:var(--act);font-family:var(--fd);font-style:italic}
+.sadqa-contrib{max-width:560px;margin:0 auto 2rem;padding:1.5rem;background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);text-align:center;box-shadow:var(--sh1)}
+.sadqa-contrib-title{font-family:var(--fd);font-size:1rem;font-weight:400;color:var(--t1);margin-bottom:.4rem}
+.sadqa-contrib-desc{font-size:13px;color:var(--t3);line-height:1.65;margin-bottom:1.1rem;font-family:var(--fl)}
+.sadqa-gh-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 20px;background:var(--t1);color:var(--bg);border-radius:9px;font-size:13.5px;font-weight:500;text-decoration:none;transition:opacity .15s;font-family:var(--fb)}
+.sadqa-gh-btn:hover{opacity:.82}
+/* ── Community ── */
+.com-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:.5rem;margin-bottom:1.25rem;border-bottom:.5px solid var(--bd1)}
+.com-tabs::-webkit-scrollbar{display:none}
+.com-tab{padding:7px 16px;font-size:13px;border:none;border-radius:20px;background:transparent;color:var(--t3);cursor:pointer;white-space:nowrap;transition:all .18s var(--e);flex-shrink:0}
+.com-tab:hover{background:var(--bg2);color:var(--t1)}
+.com-tab.on{background:var(--acs);color:var(--act);border:.5px solid var(--acb)}
+.com-loading{padding:2rem;text-align:center;color:var(--t4);font-size:13px}
+.com-empty{padding:2rem;text-align:center;color:var(--t4);font-size:13.5px;font-family:var(--fl);font-style:italic}
+.com-sort{display:flex;gap:6px;margin-bottom:1rem}
+.com-sort-btn{padding:5px 14px;font-size:12.5px;border:none;border-radius:20px;background:var(--bg2);color:var(--t3);cursor:pointer;transition:all .15s}
+.com-sort-btn.on{background:var(--acs);color:var(--act)}
+.com-post-form{background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--sh1)}
+.com-input{width:100%;border:.5px solid var(--bd2);border-radius:var(--r2);background:var(--bg2);color:var(--t1);padding:10px 12px;font-size:14px;font-family:var(--fb);resize:vertical;transition:border-color .15s;min-height:80px}
+.com-input:focus{outline:none;border-color:var(--acb);box-shadow:0 0 0 3px var(--acs)}
+.com-form-row{display:flex;gap:8px;margin-top:.75rem;flex-wrap:wrap}
+.com-name{flex:1;min-width:120px;border:.5px solid var(--bd2);border-radius:var(--r2);background:var(--bg2);color:var(--t1);padding:8px 12px;font-size:13.5px;font-family:var(--fb)}
+.com-name:focus{outline:none;border-color:var(--acb)}
+.com-post-btn{padding:9px 20px;background:var(--ac);color:#fff;border:none;border-radius:var(--r2);font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s}
+.com-post-btn:hover{background:var(--ach)}
+.com-post-btn:disabled{opacity:.55;cursor:not-allowed}
+/* Global Dhikr */
+.glob-wrap{max-width:560px;margin:0 auto;text-align:center;padding:1rem 0 2rem}
+.glob-live{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--sgs);border:.5px solid var(--sgb);border-radius:20px;font-size:12px;color:var(--sg);margin-bottom:1.5rem}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--sg);animation:pulse-dot 1.6s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.6}}
+.glob-total{font-family:var(--fd);font-size:clamp(3rem,10vw,5.5rem);font-weight:300;letter-spacing:-.05em;color:var(--t1);line-height:1;margin-bottom:.25rem}
+.glob-total-lbl{font-size:12px;color:var(--t4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2rem}
+.glob-counters{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.25rem}
+.glob-count-card{background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);padding:1.2rem .75rem;cursor:pointer;transition:all .18s var(--e);user-select:none;box-shadow:var(--sh1)}
+.glob-count-card:hover{border-color:var(--acb);background:var(--acs)}
+.glob-count-card:active,.glob-count-card.glob-tap{transform:scale(.95)}
+.glob-ar{font-family:var(--fa);font-size:clamp(.95rem,3vw,1.3rem);color:var(--t1);line-height:1.6;margin-bottom:4px}
+.glob-tr{font-size:10.5px;color:var(--t4);margin-bottom:.6rem}
+.glob-n{font-family:var(--fd);font-size:1.4rem;font-weight:300;color:var(--ac);letter-spacing:-.03em;transition:transform .2s}
+.glob-n.bump{animation:bump .25s var(--e)}
+@keyframes bump{0%{transform:scale(1.3)}100%{transform:scale(1)}}
+.glob-hint{font-size:12px;color:var(--t4);font-style:italic;font-family:var(--fl)}
+/* Du'a Board */
+.dua-board-card{background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r3);padding:1.1rem 1.25rem;margin-bottom:.6rem;box-shadow:var(--sh1);transition:border-color .15s}
+.dua-board-card:hover{border-color:var(--bd2)}
+.dbc-text{font-size:14px;color:var(--t1);line-height:1.75;margin-bottom:.6rem;font-family:var(--fl)}
+.dbc-meta{display:flex;align-items:center;gap:.4rem;font-size:12px;color:var(--t4);margin-bottom:.6rem}
+.dbc-name{color:var(--t3);font-weight:500}
+.dbc-dot{color:var(--bd3)}
+.ameen-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--gds);border:.5px solid var(--gdb);border-radius:20px;font-size:13px;color:var(--gd);cursor:pointer;transition:all .18s var(--e)}
+.ameen-btn:hover{background:var(--gd);color:#fff}
+.ameen-btn.ameened{background:var(--gd);color:#fff;pointer-events:none}
+.ameen-ar{font-family:var(--fa);font-size:.95rem}
+.ameen-n{font-weight:500;font-size:12px}
+/* Reflections */
+.ref-card{background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r2);padding:1rem 1.1rem;margin-bottom:.5rem}
+.ref-text{font-size:14px;color:var(--t1);line-height:1.75;margin-bottom:.4rem;font-family:var(--fl)}
+.ref-meta{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--t4)}
+.ref-name{color:var(--t3);font-weight:500}
+/* Reflection sheet */
+.ref-sheet{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;pointer-events:none;opacity:0;transition:opacity .25s}
+.ref-sheet.on{pointer-events:all;opacity:1}
+.ref-sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.ref-sheet-box{position:relative;width:100%;max-height:82vh;display:flex;flex-direction:column;background:var(--bg);border-radius:var(--r3) var(--r3) 0 0;transform:translateY(100%);transition:transform .3s var(--e);overflow:hidden}
+.ref-sheet.on .ref-sheet-box{transform:none}
+.ref-sheet-head{padding:1rem 1.25rem .75rem;border-bottom:.5px solid var(--bd1);display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+.ref-sheet-lbl{font-family:var(--fd);font-size:.9rem;color:var(--t2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ref-sheet-close{width:30px;height:30px;background:var(--bg2);border:.5px solid var(--bd2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);flex-shrink:0}
+.ref-sheet-scroll{flex:1;overflow-y:auto;padding:1rem 1.25rem}
+.ref-sheet-form{padding:.75rem 1.25rem 1.25rem;border-top:.5px solid var(--bd1);flex-shrink:0;background:var(--bg)}
+.ref-post-btn{width:100%;padding:10px;background:var(--ac);color:#fff;border:none;border-radius:var(--r2);font-size:14px;font-weight:500;cursor:pointer;margin-top:.6rem;transition:background .15s}
+.ref-post-btn:hover{background:var(--ach)}
+.ref-post-btn:disabled{opacity:.55}
+/* Notification bar */
+.notif-bar{position:fixed;bottom:0;left:0;right:0;z-index:450;background:var(--t1);color:var(--bg);padding:.85rem clamp(1rem,4vw,2rem);display:flex;align-items:center;gap:.75rem;transform:translateY(100%);transition:transform .35s var(--e);box-shadow:0 -4px 20px rgba(0,0,0,.15)}
+.notif-bar.on{transform:none}
+@media(max-width:850px){.notif-bar{padding-bottom:calc(.85rem + 72px)}}
+.notif-bar-text{flex:1;font-size:13px;font-family:var(--fb)}
+.notif-bar-text strong{display:block;font-size:14px;margin-bottom:2px}
+.notif-enable{padding:7px 16px;background:var(--ac);color:#fff;border:none;border-radius:var(--r2);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.notif-dismiss{padding:7px 12px;background:transparent;color:rgba(255,255,255,.5);border:none;font-size:13px;cursor:pointer;flex-shrink:0}
+/* Mobile improvements */
+@media(max-width:600px){
+  .sec{padding:1.5rem .85rem}
+  .card{padding:.85rem}
+  .sh{margin-bottom:1rem}
+  .glob-counters{gap:.5rem}
+  .glob-count-card{padding:.9rem .5rem}
+  .glob-ar{font-size:.85rem}
+  .dua-board-card{padding:.9rem 1rem}
+  .com-form-row{flex-direction:column}
+  .com-name,.com-post-btn{width:100%}
+}
 .fscreen{position:fixed;inset:0;background:var(--bg);z-index:400;overflow-y:auto;display:none}
 .fscreen.on{display:block;animation:fu .3s var(--e)}
 .fs-head{padding:1rem 1.5rem;border-bottom:.5px solid var(--bd1);display:flex;align-items:center;gap:1rem;background:var(--bg3);position:sticky;top:0;z-index:10}
@@ -388,6 +540,7 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
 <div class="bism-top">
   <div class="bism-ar">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
   <div class="bism-en">In the name of Allah, the Most Gracious, the Most Merciful</div>
+  <div class="bism-hijri" id="hijriDate"></div>
 </div>
 
 <header>
@@ -407,7 +560,9 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
       <button class="nb" onclick="goPage('qibla')">Qibla</button>
       <button class="nb" onclick="goPage('duas')">Du'as</button>
       <button class="nb" onclick="goPage('khutbah')">Khutbah</button>
+      <button class="nb" onclick="goPage('community')">Community</button>
       <button class="nb" onclick="goPage('bookmarks')">Saved</button>
+      <button class="nb" onclick="goPage('sadqa')">Sadqa</button>
     </nav>
     <div class="he">
       <button class="ib" onclick="toggleTheme()" title="Theme"><svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="3.2"/><path d="M7.5 1v1.2M7.5 12.8V14M1 7.5h1.2M12.8 7.5H14M3 3l.85.85M11.15 11.15l.85.85M11.15 3l-.85.85M3 11.15l.85.85"/></svg></button>
@@ -428,7 +583,9 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
   <button class="nb" onclick="goPage('qibla');closeMobile()">Qibla</button>
   <button class="nb" onclick="goPage('duas');closeMobile()">Du'as</button>
   <button class="nb" onclick="goPage('khutbah');closeMobile()">Khutbah</button>
+  <button class="nb" onclick="goPage('community');closeMobile()">Community 🌍</button>
   <button class="nb" onclick="goPage('bookmarks');closeMobile()">Saved</button>
+  <button class="nb" onclick="goPage('sadqa');closeMobile()">Sadqa 🤍</button>
   <button class="nb" onclick="goPage('about');closeMobile()">About</button>
 </div>
 
@@ -450,9 +607,9 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v5"/><path d="M8 12a4 4 0 004 4 4 4 0 004-4"/><path d="M7 20h10"/><path d="M12 16v4"/></svg>
     Tasbih<div class="bn-ind"></div>
   </button>
-  <button class="bn-i" id="bn-more" onclick="document.getElementById('mn').classList.add('on')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    More<div class="bn-ind"></div>
+  <button class="bn-i" id="bn-community" onclick="goPage('community')" data-p="community">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    Community<div class="bn-ind"></div>
   </button>
 </nav>
 
@@ -494,6 +651,8 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
         </button>
         <span style="font-size:12px;color:var(--t4)">Random verse from all 6,236</span>
       </div>
+      <div class="events-strip" id="eventsStrip"></div>
+      <div style="text-align:center;padding-bottom:1rem" id="streakDisplay"></div>
     </div>
   </section>
 
@@ -617,20 +776,36 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
 <!-- TASBIH -->
 <div id="page-tasbih" class="page">
   <section class="sec">
-    <div class="sh"><h2 class="st">Digital Tasbih</h2><span class="sm">Count your dhikr</span></div>
+    <div class="sh"><h2 class="st">Digital Tasbih</h2><span class="sm" id="tCycleLabel">0 cycles today</span></div>
     <div class="tasbih-ctr">
       <div class="tasbih-dhikr" id="tDhikr">سُبْحَانَ اللَّهِ</div>
       <div class="tasbih-tr" id="tTr">SubhanAllah — Glory be to Allah</div>
-      <div class="tasbih-count" id="tCount">0</div>
-      <div class="tasbih-target" id="tTarget">Target: 33</div>
-      <button class="tasbih-btn" onclick="incTasbih()">Tap to Count</button>
+      <!-- SVG progress ring wrapping the tap button -->
+      <div class="tasbih-ring-wrap">
+        <svg class="tasbih-ring" id="tRing" viewBox="0 0 168 168">
+          <circle class="bg" cx="84" cy="84" r="78"/>
+          <circle class="prog" id="tRingProg" cx="84" cy="84" r="78"
+            stroke-dasharray="490"
+            stroke-dashoffset="490"/>
+        </svg>
+        <button class="tasbih-btn" onclick="incTasbih()">
+          <div class="tasbih-count" id="tCount">0</div>
+          <div style="font-size:10px;opacity:.7;margin-top:2px">tap</div>
+        </button>
+      </div>
+      <div class="tasbih-target" id="tTarget">0 / 33</div>
+      <div class="tasbih-cycles" id="tCycles"></div>
+      <!-- Three-dhikr auto-advance sequence -->
+      <div class="tasbih-seq" id="tSeq">
+        <button class="tas-seq-btn on" id="tseq-0" onclick="setSeqDhikr(0)">سُبْحَانَ اللَّهِ</button>
+        <button class="tas-seq-btn" id="tseq-1" onclick="setSeqDhikr(1)">الْحَمْدُ لِلَّهِ</button>
+        <button class="tas-seq-btn" id="tseq-2" onclick="setSeqDhikr(2)">اللَّهُ أَكْبَرُ</button>
+      </div>
       <div><button class="tasbih-reset" onclick="resetTasbih()">Reset</button></div>
       <div class="tasbih-presets">
-        <button class="fc" onclick="setDhikr('سُبْحَانَ اللَّهِ','SubhanAllah — Glory be to Allah',33)">SubhanAllah</button>
-        <button class="fc" onclick="setDhikr('الْحَمْدُ لِلَّهِ','Alhamdulillah — Praise be to Allah',33)">Alhamdulillah</button>
-        <button class="fc" onclick="setDhikr('اللَّهُ أَكْبَرُ','Allahu Akbar — Allah is Greatest',34)">Allahu Akbar</button>
-        <button class="fc" onclick="setDhikr('لَا إِلَٰهَ إِلَّا اللَّهُ','La ilaha illa Allah',100)">La ilaha illa Allah</button>
-        <button class="fc" onclick="setDhikr('أَسْتَغْفِرُ اللَّهَ','Astaghfirullah — I seek forgiveness',100)">Astaghfirullah</button>
+        <button class="fc" onclick="setDhikr('لَا إِلَٰهَ إِلَّا اللَّهُ','La ilaha illa Allah — There is no god but Allah',100)">La ilaha illa Allah</button>
+        <button class="fc" onclick="setDhikr('أَسْتَغْفِرُ اللَّهَ','Astaghfirullah — I seek forgiveness from Allah',100)">Astaghfirullah</button>
+        <button class="fc" onclick="setDhikr('صَلِّ عَلَى مُحَمَّد','Sallallahu alayhi wa sallam',100)">Salawat</button>
       </div>
     </div>
   </section>
@@ -706,6 +881,173 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
   </section>
 </div>
 
+<!-- COMMUNITY PAGE -->
+<div id="page-community" class="page">
+  <section class="sec">
+    <div class="sh"><h2 class="st">Community</h2><span class="sm">Believers worldwide 🌍</span></div>
+    <div class="com-tabs">
+      <button class="com-tab on" onclick="switchComTab('dhikr')">🌐 Global Dhikr</button>
+      <button class="com-tab" onclick="switchComTab('duas')">🤲 Du'a Board</button>
+      <button class="com-tab" onclick="switchComTab('reflections')">💬 Reflections</button>
+    </div>
+    <!-- Global Dhikr -->
+    <div id="com-dhikr" class="com-panel">
+      <div class="glob-wrap">
+        <div class="glob-live"><span class="live-dot"></span>Live worldwide</div>
+        <div class="glob-total" id="globTotal">0</div>
+        <div class="glob-total-lbl">total dhikr counted together</div>
+        <div class="glob-counters">
+          <div class="glob-count-card" onclick="globIncrement('subhanallah',this)">
+            <div class="glob-ar">سُبْحَانَ اللَّهِ</div>
+            <div class="glob-tr">SubhanAllah</div>
+            <div class="glob-n" id="globSub">0</div>
+          </div>
+          <div class="glob-count-card" onclick="globIncrement('alhamdulillah',this)">
+            <div class="glob-ar">الْحَمْدُ لِلَّهِ</div>
+            <div class="glob-tr">Alhamdulillah</div>
+            <div class="glob-n" id="globHamd">0</div>
+          </div>
+          <div class="glob-count-card" onclick="globIncrement('allahu_akbar',this)">
+            <div class="glob-ar">اللَّهُ أَكْبَرُ</div>
+            <div class="glob-tr">Allahu Akbar</div>
+            <div class="glob-n" id="globAkbar">0</div>
+          </div>
+        </div>
+        <p class="glob-hint">Tap any dhikr — your count joins believers worldwide 🌍</p>
+      </div>
+    </div>
+    <!-- Du'a Board -->
+    <div id="com-duas" class="com-panel" style="display:none">
+      <div class="com-post-form">
+        <textarea class="com-input" id="duaBoardText" placeholder="Share a du'a in Arabic or English…" rows="3" maxlength="500"></textarea>
+        <div class="com-form-row">
+          <input class="com-name" id="duaBoardName" placeholder="Your name (optional)" maxlength="40"/>
+          <button class="com-post-btn" onclick="postDua()">Post Du'a</button>
+        </div>
+      </div>
+      <div class="com-sort">
+        <button class="com-sort-btn on" onclick="loadDuaBoard('recent')">Recent</button>
+        <button class="com-sort-btn" onclick="loadDuaBoard('ameens')">Most Ameens</button>
+      </div>
+      <div id="duaBoardList"><div class="com-loading">Loading du'as…</div></div>
+    </div>
+    <!-- Reflections -->
+    <div id="com-reflections" class="com-panel" style="display:none">
+      <div id="reflectionsList"></div>
+    </div>
+  </section>
+</div>
+
+<!-- SADQA PAGE -->
+<div id="page-sadqa" class="page">
+  <section class="sec">
+    <div class="sadqa-hero">
+      <div class="sadqa-verse">إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ</div>
+      <div class="sadqa-ref">Surah Al-Kawthar · 108:1</div>
+      <div class="sadqa-trans">"Indeed, We have granted you Al-Kawthar (abundance of good)."</div>
+      <div class="sadqa-heading">This app is Sadqa Jariya</div>
+      <div class="sadqa-sub">Every ayah read, every du'a made, every dhikr counted here is a continuous charity. The reward flows through this silsila — a chain of love — to all who are named below.</div>
+    </div>
+
+    <!-- Silsila of ihdaa al-thawab -->
+    <div class="silsila">
+      <div class="sil-item">
+        <div class="sil-num gold">١</div>
+        <div>
+          <div class="sil-ar">اللَّهُ سُبْحَانَهُ وَتَعَالَى</div>
+          <div class="sil-en">Allah — The Most High, to Whom all praise and worship belongs</div>
+        </div>
+      </div>
+      <div class="sil-item">
+        <div class="sil-num gold">٢</div>
+        <div>
+          <div class="sil-ar">سيدنا محمد ﷺ</div>
+          <div class="sil-en">The Prophet Muhammad ﷺ — Seal of the Prophets, mercy to all worlds</div>
+        </div>
+      </div>
+      <div class="sil-item">
+        <div class="sil-num">٣</div>
+        <div>
+          <div class="sil-ar">جميع الأنبياء والمرسلين عليهم السلام</div>
+          <div class="sil-en">All Prophets and Messengers, peace be upon them all</div>
+        </div>
+      </div>
+      <div class="sil-item">
+        <div class="sil-num">٤</div>
+        <div>
+          <div class="sil-ar">أولياء الله الصالحين</div>
+          <div class="sil-en">The Awliya of Allah — His close and beloved servants</div>
+        </div>
+      </div>
+      <div class="sil-item">
+        <div class="sil-num">٥</div>
+        <div>
+          <div class="sil-ar">الخلفاء الراشدين والصحابة الكرام</div>
+          <div class="sil-en">The Rightly-Guided Khalifa and the noble Companions</div>
+        </div>
+      </div>
+      <div class="sil-item">
+        <div class="sil-num">٦</div>
+        <div>
+          <div class="sil-ar">محبو الله ورسوله في كل زمان ومكان</div>
+          <div class="sil-en">All who have loved Allah and His Messenger, in every time and place</div>
+        </div>
+      </div>
+      <div class="sil-item">
+        <div class="sil-num">٧</div>
+        <div>
+          <div class="sil-ar">جميع المؤمنين والمؤمنات — الأحياء منهم والأموات</div>
+          <div class="sil-en">All believing Muslims — living and departed, past and present</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal dedication -->
+    <div class="sadqa-ded">
+      <div class="sadqa-ded-ar">رَبَّنَا تَقَبَّلْ مِنَّا ۖ إِنَّكَ أَنتَ السَّمِيعُ الْعَلِيمُ</div>
+      <div class="sadqa-ded-en">"Our Lord, accept this from us. Indeed You are the All-Hearing, the All-Knowing." — Al-Baqarah 2:127</div>
+      <div class="sadqa-ded-sig">Built with love as sadqa jariya by Muhammad Sulaiman Abdul Salam<br>May Allah accept it and make it a light in this world and the next. آمِين</div>
+    </div>
+
+    <!-- GitHub contribution -->
+    <div class="sadqa-contrib">
+      <div class="sadqa-contrib-title">Contribute & Earn Sadqa</div>
+      <div class="sadqa-contrib-desc">This app is open source. Every bug fixed, every feature added, every line of code contributed earns you a share of the reward — your name joins this silsila.</div>
+      <a href="https://github.com/muhammadsulaimanabdulsalamrab-ctrl/An-Nur" target="_blank" rel="noopener" class="sadqa-gh-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </section>
+</div>
+
+<!-- REFLECTION SHEET -->
+<div class="ref-sheet" id="refSheet">
+  <div class="ref-sheet-bg" onclick="closeRefSheet()"></div>
+  <div class="ref-sheet-box">
+    <div class="ref-sheet-head">
+      <span class="ref-sheet-lbl" id="refSheetLabel"></span>
+      <button class="ref-sheet-close" onclick="closeRefSheet()"><svg width="12" height="12" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 1.5l10 10M11.5 1.5l-10 10"/></svg></button>
+    </div>
+    <div class="ref-sheet-scroll" id="refSheetList"></div>
+    <div class="ref-sheet-form">
+      <textarea class="com-input" id="refText" placeholder="Share your reflection on this ayah…" rows="2" maxlength="400"></textarea>
+      <input class="com-name" id="refName" placeholder="Your name (optional)" maxlength="40" style="width:100%;margin-top:.5rem"/>
+      <button class="ref-post-btn" id="refPostBtn" onclick="postReflection()">Share Reflection</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION BAR -->
+<div class="notif-bar" id="notifBar">
+  <div class="notif-bar-text">
+    <strong>Daily Ayah Reminders 🌅</strong>
+    Get a Qur'an verse every morning at 8am
+  </div>
+  <button class="notif-enable" onclick="requestDailyNotif()">Enable</button>
+  <button class="notif-dismiss" onclick="dismissNotifBar()">✕</button>
+</div>
+
 <!-- SHARE MODAL -->
 <div class="share-modal" id="shareModal" onclick="if(event.target===this)closeShare()">
   <div class="share-box">
@@ -746,9 +1088,9 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
   <div class="fi">
     <span class="fl2">An <em>Nur</em></span>
     <div class="fls">
-      <a onclick="goPage('surahs')">Qur'an</a><a onclick="goPage('names')">99 Names</a><a onclick="goPage('hadith')">Hadith</a><a onclick="goPage('stories')">Stories</a><a onclick="goPage('duas')">Du'as</a><a onclick="goPage('prayer')">Prayer</a><a onclick="goPage('about')">About</a>
+      <a onclick="goPage('surahs')">Qur'an</a><a onclick="goPage('names')">99 Names</a><a onclick="goPage('hadith')">Hadith</a><a onclick="goPage('stories')">Stories</a><a onclick="goPage('duas')">Du'as</a><a onclick="goPage('prayer')">Prayer</a><a onclick="goPage('about')">About</a><a onclick="goPage('sadqa')">Sadqa 🤍</a><a href="https://github.com/muhammadsulaimanabdulsalamrab-ctrl/An-Nur" target="_blank" rel="noopener">GitHub</a>
     </div>
-    <p class="fc2">Free forever · Built as sadaqah jariyah · May Allah accept it 🤍</p>
+    <p class="fc2">Free forever · Built as sadaqah jariyah by Muhammad Sulaiman Abdul Salam · May Allah accept it 🤍</p>
   </div>
 </footer>
 
@@ -756,6 +1098,7 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
 <script src="content-plus.js"></script>
 <script src="quran-full.js"></script>
 <script src="app.js"></script>
+<script src="firebase-community.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
