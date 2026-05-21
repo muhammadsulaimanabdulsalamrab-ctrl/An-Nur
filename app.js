@@ -1132,6 +1132,7 @@ function loadTasbih() {
   updateSeqButtons();
 }
 function setSeqDhikr(idx) {
+  if (!TASBIH_SEQ[idx]) return;
   TASBIH_SEQ_IDX = idx;
   localStorage.setItem('annur_tas_seq', idx);
   TASBIH = 0;
@@ -1466,3 +1467,7 @@ function openShareDirect2(ar, en, ref) {
   document.getElementById('shareModal').classList.add('on');
   document.body.style.overflow = 'hidden';
 }
+
+// Keep inline HTML handlers available even if a browser serves mixed cached assets.
+window.toggleJuzView = toggleJuzView;
+window.setSeqDhikr = setSeqDhikr;

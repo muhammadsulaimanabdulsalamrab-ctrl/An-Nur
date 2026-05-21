@@ -1,4 +1,4 @@
-const CACHE = 'annur-v3';
+const CACHE = 'annur-v4';
 const STATIC = ['/', '/index.html', '/app.js', '/data.js', '/content-plus.js', '/quran-full.js', '/firebase-community.js'];
 
 // Install: cache static shell
@@ -21,9 +21,19 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Static assets — cache first
+  // Static assets — network first so deployed JS/HTML fixes are not held back by an older cache.
   if (STATIC.some(p => url.pathname === p || url.pathname.endsWith(p.replace('/', '')))) {
-    e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request)));
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          if (res.ok && e.request.method === 'GET') {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
     return;
   }
 
