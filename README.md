@@ -6,6 +6,8 @@ A complete, free, production-ready Islamic knowledge companion. All 114 Surahs (
 
 **[→ Deploy to Vercel in 60 seconds](#-deploy-in-60-seconds)**
 
+An Nur is open to sincere contributions from Muslims and respectful allies across communities. Improvements are welcome for accessibility, translations, verified Islamic content, performance, UI polish, documentation, and bug fixes. Please keep the project free, ad-free, account-free, and grounded in authentic sources.
+
 ---
 
 ## ✨ All Features (50+)
@@ -179,6 +181,22 @@ annur/
 ├── README.md       # This file
 └── LICENSE         # MIT
 ```
+
+---
+
+## Contributing
+
+An Nur is built as sadaqah jariyah for the Ummah and is open to contribution.
+
+Good contribution areas:
+- Fix bugs and console errors
+- Improve mobile accessibility and performance
+- Add verified duas, hadith references, or source notes
+- Improve translations and transliteration quality
+- Improve SEO, documentation, and onboarding
+- Keep the app free, private, and lightweight
+
+Please do not add ads, paid APIs, user accounts, invasive analytics, or unsourced religious content.
 
 Just **3 files** to deploy. Total size: ~150KB unzipped. Loads instantly.
 

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://an-nur-eosin.vercel.app/sitemap.xml
