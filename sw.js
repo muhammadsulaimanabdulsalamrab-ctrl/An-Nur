@@ -1,4 +1,4 @@
-const CACHE = 'annur-v4';
+const CACHE = 'annur-v5';
 const STATIC = ['/', '/index.html', '/app.js', '/data.js', '/content-plus.js', '/quran-full.js', '/firebase-community.js'];
 
 // Install: cache static shell

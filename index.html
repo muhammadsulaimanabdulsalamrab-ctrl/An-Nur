@@ -17,6 +17,24 @@
 <meta property="og:description" content="Complete Qur'an (6,236 ayat), 99 Names of Allah, authentic hadith, Prophet stories, prayer times. Free forever.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://an-nur-eosin.vercel.app">
+<script>
+window.setSeqDhikr = window.setSeqDhikr || function(idx) {
+  const seq = [
+    { ar: 'سُبْحَانَ اللَّهِ', tr: 'SubhanAllah — Glory be to Allah', target: 33 },
+    { ar: 'الْحَمْدُ لِلَّهِ', tr: 'Alhamdulillah — Praise be to Allah', target: 33 },
+    { ar: 'اللَّهُ أَكْبَرُ', tr: 'Allahu Akbar — Allah is Greatest', target: 34 }
+  ];
+  const item = seq[idx];
+  if (!item) return;
+  localStorage.setItem('annur_tas_seq', idx);
+  localStorage.setItem('annur_tas', 0);
+  document.getElementById('tCount')?.replaceChildren(document.createTextNode('0'));
+  document.getElementById('tDhikr')?.replaceChildren(document.createTextNode(item.ar));
+  document.getElementById('tTr')?.replaceChildren(document.createTextNode(item.tr));
+  document.getElementById('tTarget')?.replaceChildren(document.createTextNode(`Target: ${item.target}`));
+  document.querySelectorAll('.tas-seq-btn').forEach((btn, i) => btn.classList.toggle('on', i === idx));
+};
+</script>
 <script defer src="https://cloud.umami.is/script.js" data-website-id="5ff00002-dd84-4326-91d1-6a3efa5c6981"></script>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js';
@@ -734,7 +752,10 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
     <p style="font-size:13px;color:var(--t3);line-height:1.7;margin-bottom:1rem;padding:13px 15px;background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r2)">The Prophet ﷺ said: <em>"Allah has ninety-nine Names. Whoever preserves them will enter Paradise."</em> — Bukhari & Muslim</p>
     <div style="background:var(--bg3);border:.5px solid var(--bd2);border-radius:var(--r3);overflow:hidden;margin-bottom:1.25rem;box-shadow:var(--sh2)">
       <div style="position:relative;padding-bottom:56.25%;height:0">
-        <iframe src="https://www.youtube-nocookie.com/embed/lgm3puP3tMA?list=RDlgm3puP3tMA" title="99 Names of Allah" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:var(--r2) var(--r2) 0 0"></iframe>
+        <a href="https://youtu.be/lgm3puP3tMA?list=RDlgm3puP3tMA" target="_blank" rel="noopener" aria-label="Open 99 Names recitation on YouTube" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.75rem;background:linear-gradient(135deg,var(--acs),var(--gds));border-radius:var(--r2) var(--r2) 0 0;color:var(--t1)">
+          <span style="width:58px;height:58px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 28px rgba(217,119,87,.28)"><svg width="24" height="24" viewBox="0 0 26 26" fill="white"><path d="M6 3l17 10L6 23z"/></svg></span>
+          <span style="font-family:var(--fa);font-size:clamp(1.8rem,6vw,3.4rem);line-height:1">أسماء الله الحسنى</span>
+        </a>
       </div>
       <div style="padding:.9rem 1.2rem;border-top:.5px solid var(--bd1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
         <div><div style="font-family:var(--fd);font-size:14px;color:var(--t1)">99 Names of Allah — Beautiful Recitation</div><div style="font-size:12px;color:var(--t4);margin-top:2px">Listen while you read the Names below</div></div>
@@ -1097,7 +1118,7 @@ footer{border-top:.5px solid var(--bd1);padding:2rem clamp(1rem,4vw,2rem);margin
 <script src="data.js"></script>
 <script src="content-plus.js"></script>
 <script src="quran-full.js"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 <script src="firebase-community.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
