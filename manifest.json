@@ -1,0 +1,39 @@
+{
+  "name": "An Nur — Qur'an · Hadith · Names of Allah",
+  "short_name": "An Nur",
+  "description": "Complete Qur'an (6,236 ayat), 99 Names of Allah, authentic hadith, Prophet stories, prayer times & qibla. Free forever.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#faf9f5",
+  "theme_color": "#d97757",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "lifestyle"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Qur'an",
+      "short_name": "Qur'an",
+      "url": "/?p=surahs",
+      "description": "Read all 114 surahs · 6,236 ayat"
+    },
+    {
+      "name": "Prayer Times",
+      "short_name": "Prayer",
+      "url": "/?p=prayer",
+      "description": "Today's prayer times for your location"
+    },
+    {
+      "name": "Digital Tasbih",
+      "short_name": "Tasbih",
+      "url": "/?p=tasbih",
+      "description": "Count your dhikr"
+    }
+  ],
+  "screenshots": []
+}

@@ -45,6 +45,20 @@ const RECITERS = [
 
 const KAABA_LAT = 21.4225, KAABA_LNG = 39.8262;
 
+// Juz each surah starts in (index = surah number, 1-based)
+const SURAH_JUZ = [0,1,1,3,4,6,7,8,9,10,11,11,12,13,13,14,14,15,15,16,16,17,17,18,18,18,19,19,20,20,21,21,21,21,22,22,22,23,23,23,24,24,25,25,25,25,26,26,26,26,26,26,27,27,27,27,27,27,28,28,28,28,28,28,28,28,28,29,29,29,29,29,29,29,29,29,29,29,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30];
+
+// Juz Arabic names
+const JUZ_NAMES = ['','الم','سيقول','تلك','لن تنالوا','والمحصنات','لا يحب','وإذا سمعوا','ولو أننا','قال الملأ','واعلموا','يعتذرون','وما من دابة','وما أبرئ','ربما','سبحان الذي','قال ألم','اقترب','قد أفلح','وقال الذين','أمن خلق','ومن يقنت','ومن يقنت','وما لي','فمن أظلم','إليه يرد','حم','قال فما','لقد سمع','تبارك الذي','عم'];
+
+// Merged duas (base + extra from content-plus.js)
+const DUAS_DATA = typeof DUAS_EXTRA !== 'undefined' && Array.isArray(DUAS_EXTRA)
+  ? [...DUAS, ...DUAS_EXTRA]
+  : DUAS;
+
+// Reading progress
+let READ_SET = new Set(JSON.parse(localStorage.getItem('annur_read') || '[]'));
+
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -58,6 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
   renderBookmarks();
   loadTasbih();
   renderDuas();
+  updateReadProgress();
+  renderJuzGrid();
+  // Handle PWA shortcut ?p= param
+  const urlP = new URLSearchParams(location.search).get('p');
+  if (urlP) goPage(urlP);
 });
 
 function updateDynamicCopy() {
@@ -90,11 +109,21 @@ function goPage(p) {
   const ps = ['home', 'surahs', 'names', 'hadith', 'stories', 'prayer', 'tasbih', 'qibla', 'duas', 'khutbah', 'bookmarks'];
   const i = ps.indexOf(p);
   if (i >= 0) document.querySelectorAll('#nav .nb')[i]?.classList.add('on');
+  // sync bottom nav
+  document.querySelectorAll('.bn-i[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === p));
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (p === 'bookmarks') renderBookmarks();
   if (p === 'prayer') loadPrayerTimes();
   if (p === 'qibla') getQibla();
   if (p === 'duas') renderDuas(ACTIVE_DUA_CAT);
+}
+
+function focusSearch() {
+  goPage('home');
+  setTimeout(() => {
+    const sq = document.getElementById('sq');
+    if (sq) { sq.focus(); sq.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }, 60);
 }
 
 function dayOfYear() {
@@ -208,7 +237,7 @@ function renderDaily() {
     <button class="fc" style="font-size:12px" onclick="goPage('stories');setTimeout(()=>document.getElementById('story-${day % STORIES_DATA.length}')?.scrollIntoView({behavior:'smooth'}),100)">Read full →</button>`;
 }
 
-// ═══ SEARCH ═══
+// ═══ SEARCH (all innerHTML uses local hardcoded data, not raw user input) ═══
 function onInput() {
   const q = document.getElementById('sq').value.trim();
   clearTimeout(STM);
@@ -227,8 +256,18 @@ function clearSearch() {
   document.getElementById('resSec').style.display = 'none';
   document.getElementById('homeContent').style.display = 'block';
 }
+
+function parseVerseRef(raw) {
+  const m = raw.match(/^(\d{1,3})\s*[:\-]\s*(\d{1,3})$/);
+  if (m) return { s: parseInt(m[1]), a: parseInt(m[2]) };
+  const m2 = raw.match(/surah\s+(\d+)\s+(?:ayah|verse|v|a)\s*(\d+)/i);
+  if (m2) return { s: parseInt(m2[1]), a: parseInt(m2[2]) };
+  return null;
+}
+
 function doSearch() {
-  const q = document.getElementById('sq').value.trim().toLowerCase();
+  const raw = document.getElementById('sq').value.trim();
+  const q = raw.toLowerCase();
   if (!q) { clearSearch(); return; }
   document.getElementById('resSec').style.display = 'block';
   document.getElementById('homeContent').style.display = 'none';
@@ -237,28 +276,41 @@ function doSearch() {
   document.getElementById('rg').innerHTML = '';
 
   setTimeout(() => {
-    const r = { ayat: [], names: [], hadith: [], stories: [] };
-    if (FILT === 'all' || FILT === 'ayat') {
-      r.ayat = QURAN_VERSES
-        .map(enrichVerse)
-        .filter(a => `${a.en} ${a.tr} ${a.sn} ${a.sar || ''} ${a.ar}`.toLowerCase().includes(q))
-        .slice(0, 12);
+    let directVerseHtml = '';
+    const ref = parseVerseRef(raw.trim());
+    if (ref) {
+      const v = getVerseRecord(ref.s, ref.a);
+      if (v) {
+        const meta = getSurahMeta(ref.s);
+        directVerseHtml = `<div class="svr-card"><div class="svr-label">⚡ Direct match · ${escapeAttr(meta?.en || '')} ${ref.s}:${ref.a}</div>${cardHTML(v, '')}</div>`;
+      }
     }
-    if (FILT === 'all' || FILT === 'names') r.names = NAMES.filter(n => `${n.tr} ${n.mean} ${n.desc}`.toLowerCase().includes(q)).slice(0, 8);
-    if (FILT === 'all' || FILT === 'hadith') r.hadith = HADITH_DATA.filter(h => `${h.en} ${h.narr} ${h.cat}`.toLowerCase().includes(q)).slice(0, 8);
-    if (FILT === 'all' || FILT === 'stories') r.stories = STORIES_DATA.filter(s => `${s.name} ${s.sub} ${s.body}`.toLowerCase().includes(q)).slice(0, 5);
 
-    const total = r.ayat.length + r.names.length + r.hadith.length + r.stories.length;
+    const r = { surahs: [], ayat: [], names: [], hadith: [], stories: [] };
+
+    if (FILT === 'all' || FILT === 'ayat') {
+      r.surahs = SURAHS.filter(s => s.en.toLowerCase().includes(q) || s.meaning.toLowerCase().includes(q)).slice(0, 4);
+      r.ayat = QURAN_VERSES.map(enrichVerse)
+        .filter(a => `${a.en} ${a.tr} ${a.sn} ${a.sar || ''} ${a.ar}`.toLowerCase().includes(q))
+        .slice(0, 15);
+    }
+    if (FILT === 'all' || FILT === 'names') r.names = NAMES.filter(n => `${n.tr} ${n.mean} ${n.desc} ${n.ar}`.toLowerCase().includes(q)).slice(0, 8);
+    if (FILT === 'all' || FILT === 'hadith') r.hadith = HADITH_DATA.filter(h => `${h.en} ${h.narr} ${h.cat} ${h.ar}`.toLowerCase().includes(q)).slice(0, 8);
+    if (FILT === 'all' || FILT === 'stories') r.stories = STORIES_DATA.filter(s => `${s.name} ${s.sub} ${s.body} ${s.lesson}`.toLowerCase().includes(q)).slice(0, 5);
+
+    const total = r.surahs.length + r.ayat.length + r.names.length + r.hadith.length + r.stories.length + (directVerseHtml ? 1 : 0);
     document.getElementById('ld').classList.remove('on');
     document.getElementById('rc').textContent = total + ' found';
-
     if (total === 0) { document.getElementById('es').classList.add('on'); return; }
 
-    let html = '';
-    if (r.ayat.length) html += `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Ayat (${r.ayat.length})</h3><div class="cs">${r.ayat.map(a => cardHTML(a, q)).join('')}</div>`;
-    if (r.names.length) html += `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Names (${r.names.length})</h3><div class="names-grid">${r.names.map(nameCard).join('')}</div>`;
-    if (r.hadith.length) html += `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Hadith (${r.hadith.length})</h3>${r.hadith.map(hadithCard).join('')}`;
-    if (r.stories.length) html += `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase">Stories (${r.stories.length})</h3>${r.stories.map((s, i) => storyCard(s, i)).join('')}`;
+    const secHead = (label, n) => `<h3 style="font-family:var(--fd);font-size:.9rem;color:var(--t3);margin:1.5rem 0 .5rem;letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:8px">${label} <span style="font-weight:300;color:var(--t4)">(${n})</span></h3>`;
+
+    let html = directVerseHtml;
+    if (r.surahs.length) html += secHead('Surahs', r.surahs.length) + `<div class="sg2" style="margin-bottom:.5rem">${r.surahs.map(s => `<div class="sr2" onclick="openSurah(${s.num})"><div class="sn2">${s.num}</div><div class="sin"><div class="se">${s.en}</div><div class="ss">${s.meaning} · ${s.ayat} ayat</div></div><div class="sar2">${s.ar}</div></div>`).join('')}</div>`;
+    if (r.ayat.length) html += secHead('Ayat', r.ayat.length) + `<div class="cs">${r.ayat.map(a => cardHTML(a, q)).join('')}</div>`;
+    if (r.names.length) html += secHead('Names of Allah', r.names.length) + `<div class="names-grid">${r.names.map(nameCard).join('')}</div>`;
+    if (r.hadith.length) html += secHead('Hadith', r.hadith.length) + r.hadith.map(hadithCard).join('');
+    if (r.stories.length) html += secHead('Stories', r.stories.length) + r.stories.map((s, i) => storyCard(s, i)).join('');
     document.getElementById('rg').innerHTML = html;
   }, 180);
 }
@@ -272,8 +324,13 @@ function renderSurahGrid(f = '', t = 'all') {
   });
   document.getElementById('sg').innerHTML = list.map(s => `
     <div class="sr2" onclick="openSurah(${s.num})">
+      ${READ_SET.has(s.num) ? `<div class="sr2-tick" title="Read">✓</div>` : ''}
       <div class="sn2">${s.num}</div>
-      <div class="sin"><div class="se">${s.en}</div><div class="ss">${s.meaning} · ${s.ayat} ayat</div></div>
+      <div class="sin">
+        <div class="se">${s.en}</div>
+        <div class="ss">${s.meaning} · ${s.ayat} ayat</div>
+        <span class="sr2-type">${s.type === 'Meccan' ? 'Makki' : 'Madani'}</span>
+      </div>
       <div class="sar2">${s.ar}</div>
     </div>`).join('');
 }
@@ -282,11 +339,108 @@ function setSType(btn, t) {
   STYPE = t;
   document.querySelectorAll('[data-t]').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
+  document.getElementById('juzGrid').style.display = 'none';
+  document.getElementById('juzToggle')?.classList.remove('on');
   renderSurahGrid(document.getElementById('ssi').value, t);
+}
+
+// ═══ JUZ NAVIGATION ═══
+let ACTIVE_JUZ = 0;
+function renderJuzGrid() {
+  const el = document.getElementById('juzGrid');
+  if (!el) return;
+  el.innerHTML = Array.from({ length: 30 }, (_, i) => i + 1).map(j => `
+    <div class="juz-chip ${ACTIVE_JUZ === j ? 'on' : ''}" onclick="setJuz(${j})">
+      <span>Juz ${j}</span>
+      <span class="juz-sn">${JUZ_NAMES[j] || ''}</span>
+    </div>`).join('');
+}
+function toggleJuzView() {
+  const grid = document.getElementById('juzGrid');
+  const btn = document.getElementById('juzToggle');
+  const showing = grid.style.display !== 'none';
+  grid.style.display = showing ? 'none' : 'grid';
+  btn?.classList.toggle('on', !showing);
+  if (showing) { ACTIVE_JUZ = 0; renderSurahGrid(document.getElementById('ssi').value, STYPE); }
+}
+function setJuz(j) {
+  ACTIVE_JUZ = j;
+  renderJuzGrid();
+  const surahsInJuz = SURAHS.filter(s => SURAH_JUZ[s.num] === j);
+  document.getElementById('sg').innerHTML = surahsInJuz.map(s => `
+    <div class="sr2" onclick="openSurah(${s.num})">
+      ${READ_SET.has(s.num) ? `<div class="sr2-tick" title="Read">✓</div>` : ''}
+      <div class="sn2">${s.num}</div>
+      <div class="sin">
+        <div class="se">${s.en}</div>
+        <div class="ss">${s.meaning} · ${s.ayat} ayat</div>
+        <span class="sr2-type">${s.type === 'Meccan' ? 'Makki' : 'Madani'}</span>
+      </div>
+      <div class="sar2">${s.ar}</div>
+    </div>`).join('');
+}
+
+// ═══ READING PROGRESS ═══
+function markRead(surahNum) {
+  if (READ_SET.has(surahNum)) return;
+  READ_SET.add(surahNum);
+  localStorage.setItem('annur_read', JSON.stringify([...READ_SET]));
+  updateReadProgress();
+}
+function updateReadProgress() {
+  const n = READ_SET.size;
+  const pct = Math.round(n / 114 * 100);
+  const el = document.getElementById('readCount');
+  const fill = document.getElementById('readFill');
+  if (el) el.textContent = n;
+  if (fill) fill.style.width = pct + '%';
+}
+function resetReadProgress() {
+  if (!confirm('Reset reading progress?')) return;
+  READ_SET.clear();
+  localStorage.removeItem('annur_read');
+  updateReadProgress();
+  renderSurahGrid(document.getElementById('ssi')?.value || '', STYPE);
+  toast('Progress reset');
+}
+
+// ═══ INSPIRE ME ═══
+function inspireMe() {
+  const v = enrichVerse(QURAN_VERSES[Math.floor(Math.random() * QURAN_VERSES.length)]);
+  const meta = getSurahMeta(v.s);
+  document.getElementById('sq').value = `${v.s}:${v.a}`;
+  document.getElementById('resSec').style.display = 'block';
+  document.getElementById('homeContent').style.display = 'none';
+  document.getElementById('rc').textContent = '1 found';
+  document.getElementById('ld').classList.remove('on');
+  document.getElementById('es').classList.remove('on');
+  document.getElementById('rg').innerHTML = `
+    <div class="svr-card">
+      <div class="svr-label">✨ Inspired — ${meta?.en || ''} ${v.s}:${v.a}</div>
+      ${cardHTML(v, '')}
+    </div>`;
+}
+
+// ═══ JUMP TO VERSE ═══
+function jumpToVerse(surahNum) {
+  const inp = document.getElementById('jumpInp');
+  if (!inp) return;
+  const n = parseInt(inp.value);
+  if (!n || n < 1) return;
+  const card = document.getElementById(`card-fa${surahNum}_${n}`);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.style.outline = '2px solid var(--ac)';
+    setTimeout(() => card.style.outline = '', 1800);
+  } else {
+    toast(`Verse ${n} not found — try loading the surah first`);
+  }
+  inp.value = '';
 }
 
 // ═══ FULL SURAH VIEW (Quran.com API) ═══
 async function openSurah(num) {
+  markRead(num);
   const meta = SURAHS.find(s => s.num === num);
   const fsv = document.getElementById('fullSurahView');
   fsv.classList.add('on');
@@ -367,6 +521,10 @@ function renderFullSurah(num, meta, verses) {
       <button class="qset" onclick="playFullSurah(${num})">▶ Play Surah</button>
       <button class="qset" onclick="downloadSurah(${num})">⬇ Full Text</button>
       <button class="qset" onclick="downloadTransliteration(${num})">⬇ Transliteration</button>
+      <div class="jump-wrap">
+        <input class="jump-inp" type="number" id="jumpInp" min="1" max="${meta.ayat}" placeholder="v#" title="Jump to verse" onkeydown="if(event.key==='Enter')jumpToVerse(${num})"/>
+        <button class="jump-btn" onclick="jumpToVerse(${num})">Go</button>
+      </div>
     </div>
     ${bism}
     <div class="cs" id="fullAyat">${verses.map(v => fullAyahCard(num, v, meta)).join('')}</div>`;
@@ -619,11 +777,32 @@ function renderStories() {
 }
 function storyCard(s, idx) {
   const paras = s.body.split('\n\n').map(p => `<p>${p}</p>`).join('');
+  const isLong = s.body.split('\n\n').length > 2;
   return `<div class="story-card" id="story-${idx}">
-    <div class="story-head"><div class="story-ico">${s.icon}</div><div><div class="story-title">${s.name}</div><div class="story-sub">${s.sub}</div></div></div>
-    <div class="story-body">${paras}</div>
+    <div class="story-head">
+      <div class="story-ico">${s.icon}</div>
+      <div>
+        <div class="story-title">${s.name}</div>
+        <div class="story-sub">${s.sub}</div>
+      </div>
+    </div>
+    <div class="story-body${isLong ? ' coll' : ''}" id="sbody-${idx}">${paras}</div>
+    ${isLong ? `<button class="story-expand" id="sexp-${idx}" onclick="toggleStory(${idx})">
+      Read full story
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4l4 4 4-4"/></svg>
+    </button>` : ''}
     <div class="story-lesson"><strong>Reflection:</strong> ${s.lesson}</div>
   </div>`;
+}
+function toggleStory(idx) {
+  const body = document.getElementById('sbody-' + idx);
+  const btn = document.getElementById('sexp-' + idx);
+  const isOpen = !body.classList.contains('coll');
+  body.classList.toggle('coll', isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.innerHTML = (isOpen ? 'Read full story' : 'Show less') +
+    `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="${isOpen ? 'M2 4l4 4 4-4' : 'M2 8l4-4 4 4'}"/></svg>`;
+  if (isOpen) document.getElementById('story-' + idx)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ═══ BOOKMARKS ═══
@@ -717,40 +896,62 @@ function hl(t, q) {
 }
 
 // ═══ AUDIO ═══
+let MINI_SURAH = 0, MINI_AYAH = 0;
+
 function audioHTML(uid) {
   return `<button class="pc" id="pc-${uid}" onclick="togglePP('${uid}')"><svg width="11" height="13" viewBox="0 0 11 13" fill="white"><path d="M2 1.5l8 5-8 5z"/></svg></button>
     <div class="pw"><div class="pb2" onclick="seekA(event,this)"><div class="pf" id="pf-${uid}"></div></div><span class="pt" id="pt-${uid}">0:00</span></div>
     <select class="rs" onchange="chRec(this.value)">${RECITERS.map(r => `<option value="${r.id}" ${r.id === REC ? 'selected' : ''}>${r.name}</option>`).join('')}</select>`;
 }
+
 function playAyah(uid, s, a) {
   const aw = document.getElementById('aw-' + uid);
   if (aw) aw.classList.add('on');
   if (AUDID === uid && AUD) {
-    if (AUD.paused) { AUD.play(); setPI(uid, true); }
-    else { AUD.pause(); setPI(uid, false); }
+    if (AUD.paused) { AUD.play(); setPI(uid, true); updateMiniState(true); }
+    else { AUD.pause(); setPI(uid, false); updateMiniState(false); }
     return;
   }
   stopAud();
+  MINI_SURAH = s; MINI_AYAH = a;
+  const verse = getVerseRecord(s, a);
+  const meta = getSurahMeta(s);
+  showMiniPlayer(meta?.en ? `${meta.en} ${s}:${a}` : `${s}:${a}`, verse?.ar || '');
   const s3 = String(s).padStart(3, '0'), a3 = String(a).padStart(3, '0');
   const urls = [`https://everyayah.com/data/${REC}/${s3}${a3}.mp3`, `https://everyayah.com/data/Alafasy_128kbps/${s3}${a3}.mp3`];
   const tryPlay = (i = 0) => {
-    if (i >= urls.length) { showAudioErr(uid); AUD = null; AUDID = null; return; }
+    if (i >= urls.length) { showAudioErr(uid); AUD = null; AUDID = null; hideMiniPlayer(); return; }
     AUD = new Audio(urls[i]); AUDID = uid;
-    AUD.addEventListener('play', () => setPI(uid, true));
-    AUD.addEventListener('pause', () => setPI(uid, false));
-    AUD.addEventListener('ended', () => { setPI(uid, false); AUDID = null; const pf = document.getElementById('pf-' + uid); if (pf) pf.style.width = '0%'; });
+    AUD.addEventListener('play', () => { setPI(uid, true); updateMiniState(true); });
+    AUD.addEventListener('pause', () => { setPI(uid, false); updateMiniState(false); });
+    AUD.addEventListener('ended', () => {
+      setPI(uid, false); updateMiniState(false); AUDID = null;
+      const pf = document.getElementById('pf-' + uid); if (pf) pf.style.width = '0%';
+      document.getElementById('mpFill').style.width = '0%';
+    });
     AUD.addEventListener('timeupdate', () => {
       if (!AUD.duration) return;
+      const pct = (AUD.currentTime / AUD.duration * 100) + '%';
       const pf = document.getElementById('pf-' + uid), pt = document.getElementById('pt-' + uid);
-      if (pf) pf.style.width = (AUD.currentTime / AUD.duration * 100) + '%';
+      if (pf) pf.style.width = pct;
       if (pt) pt.textContent = fmt(AUD.currentTime);
+      document.getElementById('mpFill').style.width = pct;
     });
     AUD.play().catch(() => tryPlay(i + 1));
   };
   tryPlay();
 }
-function togglePP(uid) { if (AUDID === uid && AUD) { if (AUD.paused) { AUD.play(); setPI(uid, true); } else { AUD.pause(); setPI(uid, false); } } }
-function stopAud() { if (AUD) { AUD.pause(); if (AUDID) setPI(AUDID, false); AUD = null; AUDID = null; } }
+
+function togglePP(uid) {
+  if (AUDID === uid && AUD) {
+    if (AUD.paused) { AUD.play(); setPI(uid, true); updateMiniState(true); }
+    else { AUD.pause(); setPI(uid, false); updateMiniState(false); }
+  }
+}
+function stopAud() {
+  if (AUD) { AUD.pause(); if (AUDID) setPI(AUDID, false); AUD = null; AUDID = null; }
+  hideMiniPlayer();
+}
 function setPI(uid, pl) {
   const btn = document.getElementById('pc-' + uid);
   if (!btn) return;
@@ -763,6 +964,35 @@ function showAudioErr(uid) {
   const aw = document.getElementById('aw-' + uid);
   if (!aw) return;
   aw.innerHTML = `<div style="font-size:12.5px;color:var(--t3);width:100%">⚠️ Audio works once deployed. <a href="https://everyayah.com" target="_blank" style="color:var(--ac)">EveryAyah ↗</a></div>`;
+}
+
+// ═══ MINI PLAYER ═══
+function showMiniPlayer(ref, ar) {
+  document.getElementById('mpRef').textContent = ref;
+  document.getElementById('mpAr').textContent = ar || '—';
+  document.getElementById('miniPlayer').classList.add('on');
+}
+function hideMiniPlayer() {
+  document.getElementById('miniPlayer').classList.remove('on');
+  document.getElementById('mpFill').style.width = '0%';
+}
+function closeMiniPlayer() { stopAud(); }
+function toggleMiniPP() {
+  if (!AUD) return;
+  if (AUD.paused) { AUD.play(); updateMiniState(true); if (AUDID) setPI(AUDID, true); }
+  else { AUD.pause(); updateMiniState(false); if (AUDID) setPI(AUDID, false); }
+}
+function updateMiniState(playing) {
+  const btn = document.getElementById('mpPlay');
+  if (!btn) return;
+  btn.innerHTML = playing
+    ? '<svg width="9" height="11" viewBox="0 0 9 11" fill="white"><rect x=".5" y=".5" width="3" height="10" rx="1"/><rect x="5.5" y=".5" width="3" height="10" rx="1"/></svg>'
+    : '<svg width="10" height="12" viewBox="0 0 11 13" fill="white"><path d="M2 1.5l8 5-8 5z"/></svg>';
+}
+function seekMini(e, bar) {
+  if (!AUD || !AUD.duration) return;
+  const r = bar.getBoundingClientRect();
+  AUD.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * AUD.duration;
 }
 
 // ═══ PRAYER TIMES ═══
@@ -806,19 +1036,50 @@ async function fetchPrayer(lat, lng) {
     });
     if (nextIdx === -1) nextIdx = 0;
 
+    const nextPrayer = prayers[nextIdx];
     document.getElementById('prBody').innerHTML = `
+      <div class="pcd">
+        <div>
+          <div class="pcd-lbl">Next Prayer</div>
+          <div class="pcd-name">${nextPrayer.name}</div>
+          <div class="pcd-sub">${nextPrayer.time}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pcd-lbl">Time remaining</div>
+          <div class="pcd-timer" id="pcdTimer">--:--</div>
+        </div>
+      </div>
       <div class="prayer-grid">
         ${prayers.map((p, i) => `
           <div class="prayer-card ${i === nextIdx ? 'next' : ''}">
             <div class="p-name">${p.name}</div>
             <div class="p-time">${p.time}</div>
-            ${i === nextIdx ? '<div class="p-next">Next prayer</div>' : ''}
+            ${i === nextIdx ? '<div class="p-next">Next ↑</div>' : ''}
           </div>`).join('')}
       </div>
-      <div style="text-align:center;margin-top:1.5rem;padding:13px 15px;background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r2);font-size:12.5px;color:var(--t3)">📅 ${data.data.date.readable} · ${data.data.date.hijri.date} AH<br>Method: Islamic Society of North America · Timings may vary slightly by method</div>`;
+      <div style="text-align:center;margin-top:1rem;padding:13px 15px;background:var(--bg3);border:.5px solid var(--bd1);border-radius:var(--r2);font-size:12.5px;color:var(--t3)">📅 ${data.data.date.readable} · ${data.data.date.hijri.date} AH<br>Method: ISNA · Timings may vary slightly by method</div>`;
+    startPrayerCountdown(nextPrayer.time);
   } catch (e) {
     document.getElementById('prBody').innerHTML = `<div class="es on"><h3>Couldn't load prayer times</h3><p>This usually works once deployed. Try again in a moment.</p></div>`;
   }
+}
+
+let PRAYER_TIMER = null;
+function startPrayerCountdown(timeStr) {
+  if (PRAYER_TIMER) clearInterval(PRAYER_TIMER);
+  function tick() {
+    const el = document.getElementById('pcdTimer');
+    if (!el) { clearInterval(PRAYER_TIMER); return; }
+    const now = new Date();
+    const [h, m] = timeStr.split(':').map(Number);
+    const target = new Date(now); target.setHours(h, m, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1);
+    const diff = Math.max(0, Math.floor((target - now) / 1000));
+    const hh = Math.floor(diff / 3600), mm = Math.floor((diff % 3600) / 60), ss = diff % 60;
+    el.textContent = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  }
+  tick();
+  PRAYER_TIMER = setInterval(tick, 1000);
 }
 
 // ═══ TASBIH ═══
@@ -833,6 +1094,8 @@ function incTasbih() {
   localStorage.setItem('annur_tas', TASBIH);
   document.getElementById('tCount').textContent = TASBIH;
   if (navigator.vibrate) navigator.vibrate(20);
+  const btn = document.querySelector('.tasbih-btn');
+  if (btn) { btn.classList.remove('tap'); void btn.offsetWidth; btn.classList.add('tap'); }
   if (TASBIH === TASBIH_TARGET) toast('Target reached ✓ SubhanAllah');
 }
 function resetTasbih() {
@@ -899,12 +1162,11 @@ let SHARE_DATA = null;
 
 function renderDuas(cat = 'All') {
   ACTIVE_DUA_CAT = cat;
-  // Render category pills
-  document.getElementById('duaCats').innerHTML = DUA_CATS.map(c =>
+  const allCats = ['All', ...new Set(DUAS_DATA.map(d => d.cat))];
+  document.getElementById('duaCats').innerHTML = allCats.map(c =>
     `<button class="fc ${c === cat ? 'on' : ''}" onclick="renderDuas('${c}')">${c}</button>`
   ).join('');
-  // Render duas
-  const list = cat === 'All' ? DUAS : DUAS.filter(d => d.cat === cat);
+  const list = cat === 'All' ? DUAS_DATA : DUAS_DATA.filter(d => d.cat === cat);
   document.getElementById('duaGrid').innerHTML = list.map((d, i) => duaCard(d, i)).join('');
 }
 
@@ -929,7 +1191,7 @@ function duaCard(d, i) {
 function openShare(type, idx) {
   let ar, en, ref, tr = '';
   if (type === 'dua') {
-    const d = ACTIVE_DUA_CAT === 'All' ? DUAS[idx] : DUAS.filter(x => x.cat === ACTIVE_DUA_CAT)[idx];
+    const d = ACTIVE_DUA_CAT === 'All' ? DUAS_DATA[idx] : DUAS_DATA.filter(x => x.cat === ACTIVE_DUA_CAT)[idx];
     ar = d.ar; en = d.en; ref = `${d.title} · ${d.src}`; tr = d.tr;
   } else if (type === 'ayah') {
     const a = enrichVerse(QURAN_VERSES[idx]);

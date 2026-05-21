@@ -292,3 +292,206 @@ const HADITH_EXTRA = [
     cat: "Mercy"
   }
 ];
+
+const DUAS_EXTRA = [
+  {
+    title: "Before Sleep",
+    cat: "Sleep & Waking",
+    ar: "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
+    tr: "Bismika Allahumma amutu wa ahya",
+    en: "In Your name, O Allah, I die and I live.",
+    src: "Bukhari"
+  },
+  {
+    title: "Upon Waking",
+    cat: "Sleep & Waking",
+    ar: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+    tr: "Alhamdu lillahil-ladhi ahyana ba'da ma amatana wa ilayhin-nushur",
+    en: "Praise be to Allah who gave us life after causing us to die, and to Him is the resurrection.",
+    src: "Bukhari"
+  },
+  {
+    title: "Before Eating",
+    cat: "Eating & Drinking",
+    ar: "بِسْمِ اللَّهِ",
+    tr: "Bismillah",
+    en: "In the name of Allah.",
+    src: "Bukhari & Muslim"
+  },
+  {
+    title: "After Eating",
+    cat: "Eating & Drinking",
+    ar: "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ",
+    tr: "Alhamdu lillahil-ladhi at'amana wa saqana wa ja'alana Muslimin",
+    en: "Praise be to Allah who fed us and gave us drink, and made us Muslims.",
+    src: "Abu Dawud & Tirmidhi"
+  },
+  {
+    title: "If Forgot to Say Bismillah Before Eating",
+    cat: "Eating & Drinking",
+    ar: "بِسْمِ اللَّهِ أَوَّلَهُ وَآخِرَهُ",
+    tr: "Bismillahi awwalahu wa akhirahu",
+    en: "In the name of Allah at its beginning and at its end.",
+    src: "Abu Dawud & Tirmidhi"
+  },
+  {
+    title: "Entering the Home",
+    cat: "Home",
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَ الْمَوْلِجِ وَخَيْرَ الْمَخْرَجِ بِسْمِ اللَّهِ وَلَجْنَا وَبِسْمِ اللَّهِ خَرَجْنَا وَعَلَى اللَّهِ رَبِّنَا تَوَكَّلْنَا",
+    tr: "Allahumma inni as'aluka khayral mawliji wa khayral makhraj, bismillahi walajnaa wa bismillahi kharajnaa wa 'alallahi rabbina tawakkalna",
+    en: "O Allah, I ask You for good in entering and good in leaving. In the name of Allah we enter, in the name of Allah we leave, and upon Allah our Lord we rely.",
+    src: "Abu Dawud"
+  },
+  {
+    title: "Leaving the Home",
+    cat: "Home",
+    ar: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
+    tr: "Bismillah, tawakkaltu 'alallah, wa la hawla wa la quwwata illa billah",
+    en: "In the name of Allah, I place my trust in Allah, and there is no might nor power except with Allah.",
+    src: "Abu Dawud & Tirmidhi"
+  },
+  {
+    title: "Entering the Masjid",
+    cat: "Mosque",
+    ar: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ",
+    tr: "Allahummaf-tah li abwaba rahmatik",
+    en: "O Allah, open for me the doors of Your mercy.",
+    src: "Muslim"
+  },
+  {
+    title: "Leaving the Masjid",
+    cat: "Mosque",
+    ar: "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ",
+    tr: "Allahumma inni as'aluka min fadlik",
+    en: "O Allah, I ask You of Your bounty.",
+    src: "Muslim"
+  },
+  {
+    title: "After Wudu (Ablution)",
+    cat: "Worship",
+    ar: "أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ",
+    tr: "Ash-hadu an la ilaha illallahu wahdahu la sharika lahu wa ash-hadu anna Muhammadan 'abduhu wa rasuluh",
+    en: "I bear witness that there is no god but Allah alone, without partner, and I bear witness that Muhammad is His servant and messenger.",
+    src: "Muslim"
+  },
+  {
+    title: "Dua for Parents",
+    cat: "Family",
+    ar: "رَّبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
+    tr: "Rabbi irhamhuma kama rabbayani saghira",
+    en: "My Lord, have mercy upon them both as they raised me when I was small.",
+    src: "Qur'an 17:24"
+  },
+  {
+    title: "For Increase in Knowledge",
+    cat: "Knowledge",
+    ar: "رَّبِّ زِدْنِي عِلْمًا",
+    tr: "Rabbi zidni 'ilma",
+    en: "My Lord, increase me in knowledge.",
+    src: "Qur'an 20:114"
+  },
+  {
+    title: "Dua of Yunus — Relief from Distress",
+    cat: "Hardship",
+    ar: "لَّا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ",
+    tr: "La ilaha illa anta subhanaka inni kuntu minaz-zalimin",
+    en: "There is no god except You; exalted are You. Indeed, I have been of the wrongdoers.",
+    src: "Qur'an 21:87 — Dua of Yunus (AS) in the whale"
+  },
+  {
+    title: "Istikhara Prayer",
+    cat: "Special",
+    ar: "اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ وَأَسْأَلُكَ مِنْ فَضْلِكَ الْعَظِيمِ فَإِنَّكَ تَقْدِرُ وَلَا أَقْدِرُ وَتَعْلَمُ وَلَا أَعْلَمُ وَأَنْتَ عَلَّامُ الْغُيُوبِ",
+    tr: "Allahumma inni astakhiruka bi 'ilmika wa astaqdiruka biqudratika wa as'aluka min fadlikal-'azim...",
+    en: "O Allah, I seek Your guidance by virtue of Your knowledge, and I seek ability by virtue of Your power, and I ask You of Your great bounty. You are capable and I am not, and You know and I do not, and You are the Knower of all that is unseen.",
+    src: "Bukhari — recited in a 2-rak'ah prayer before a decision"
+  },
+  {
+    title: "When Feeling Anxious or Sad",
+    cat: "Hardship",
+    ar: "اللَّهُمَّ إِنِّي عَبْدُكَ وَابْنُ عَبْدِكَ وَابْنُ أَمَتِكَ نَاصِيَتِي بِيَدِكَ مَاضٍ فِيَّ حُكْمُكَ عَدْلٌ فِيَّ قَضَاؤُكَ",
+    tr: "Allahumma inni 'abduka wabnu 'abdika wabnu amatika nasiyati biyadik, madin fiyya hukmuk, 'adlun fiyya qada'uk",
+    en: "O Allah, I am Your servant, son of Your servant, son of Your maidservant; my forelock is in Your hand, Your command over me is forever executed and Your decree over me is just.",
+    src: "Ahmad — known as the dua that removes grief and sorrow"
+  },
+  {
+    title: "When Angry",
+    cat: "Daily Life",
+    ar: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
+    tr: "A'udhu billahi minash-shaytanir-rajim",
+    en: "I seek refuge in Allah from the accursed Shaytan.",
+    src: "Bukhari & Muslim — the Prophet ﷺ prescribed this when angry"
+  },
+  {
+    title: "When Looking in the Mirror",
+    cat: "Daily Life",
+    ar: "اللَّهُمَّ أَنْتَ حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي",
+    tr: "Allahumma anta hassanta khalqi fahassin khuluqi",
+    en: "O Allah, just as You have made my physical form beautiful, make my character beautiful.",
+    src: "Ahmad & Ibn Hibban"
+  },
+  {
+    title: "Dua When It Rains",
+    cat: "Daily Life",
+    ar: "اللَّهُمَّ صَيِّبًا نَافِعًا",
+    tr: "Allahumma sayyiban nafi'a",
+    en: "O Allah, may it be a beneficial rain.",
+    src: "Bukhari"
+  },
+  {
+    title: "Before Studying or Starting Work",
+    cat: "Knowledge",
+    ar: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِّن لِّسَانِي يَفْقَهُوا قَوْلِي",
+    tr: "Rabbi-shrah li sadri wa yassir li amri wahlul 'uqdatan min lisani yafqahu qawli",
+    en: "My Lord, expand my breast, ease my task for me, and untie the knot from my tongue so they may understand my speech.",
+    src: "Qur'an 20:25-28 — Dua of Musa (AS) before his mission"
+  },
+  {
+    title: "For Good in This Life and the Next",
+    cat: "Special",
+    ar: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+    tr: "Rabbana atina fid-dunya hasanatan wa fil akhirati hasanatan wa qina 'adhaban-nar",
+    en: "Our Lord, give us good in this world and good in the Hereafter and protect us from the punishment of the Fire.",
+    src: "Qur'an 2:201 — the most frequently recited dua of the Prophet ﷺ"
+  },
+  {
+    title: "At the Start of Any Journey (Safar)",
+    cat: "Travel",
+    ar: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنقَلِبُونَ",
+    tr: "Subhanal-ladhi sakhkhara lana hadha wa ma kunna lahu muqrinin, wa inna ila Rabbina lamunqalibun",
+    en: "Glory be to the One who subjected this to us, for we could not have done it ourselves. And indeed, to our Lord we are returning.",
+    src: "Abu Dawud & Tirmidhi"
+  },
+  {
+    title: "Dua for Guidance and Steadfastness",
+    cat: "Special",
+    ar: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ",
+    tr: "Ya muqallibal-qulubi, thabbit qalbi 'ala dinik",
+    en: "O Turner of hearts, make my heart firm upon Your religion.",
+    src: "Tirmidhi — the Prophet ﷺ made this dua frequently"
+  },
+  {
+    title: "When Visiting the Sick",
+    cat: "Special",
+    ar: "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ أَنْتَ الشَّافِي لَا شِفَاءَ إِلَّا شِفَاؤُكَ شِفَاءً لَا يُغَادِرُ سَقَمًا",
+    tr: "Allahumma rabban-nasi, adh-hibil ba's, ishfi antal-shafi, la shifa'a illa shifa'uk, shifa'an la yughadiru saqama",
+    en: "O Allah, Lord of the people, remove the difficulty, heal — You are the Healer. There is no cure except Your cure, a cure that leaves no illness behind.",
+    src: "Bukhari & Muslim"
+  },
+  {
+    title: "Seeking Protection Every Morning & Evening",
+    cat: "Morning",
+    ar: "اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ",
+    tr: "Allahumma bika asbahna wa bika amsayna wa bika nahya wa bika namutu wa ilaikan-nushur",
+    en: "O Allah, by You we enter the morning and by You we enter the evening, by You we live and by You we die, and to You is the resurrection.",
+    src: "Tirmidhi"
+  },
+  {
+    title: "Dua for Forgiveness (Sayyid al-Istighfar)",
+    cat: "Forgiveness",
+    ar: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+    tr: "Allahumma anta Rabbi la ilaha illa anta, khalaqtani wa ana 'abduka, wa ana 'ala 'ahdika wa wa'dika mastata't, a'udhu bika min sharri ma sana't, abu'u laka bini'matika 'alayya wa abu'u bidhanbi faghfir li fa innahu la yaghfirudhdhunuba illa ant",
+    en: "O Allah, You are my Lord. There is no god but You. You created me and I am Your slave. I am upon Your covenant and promise as best I can. I seek refuge in You from the evil I have done. I acknowledge Your blessings upon me and acknowledge my sin. Forgive me, for none forgives sins but You.",
+    src: "Bukhari — The Prophet ﷺ said: 'Whoever says this with conviction in the evening and dies that night will enter Paradise'"
+  }
+];
